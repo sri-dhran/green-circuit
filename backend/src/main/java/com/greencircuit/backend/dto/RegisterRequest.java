@@ -17,7 +17,7 @@ public class RegisterRequest {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
-    @NotBlank(message = "Role is required (USER or OFFICE)")
+    @NotBlank(message = "Role is required (USER, OFFICE, or SUPER_ADMIN)")
     private String role;
 
     private Long officeId;

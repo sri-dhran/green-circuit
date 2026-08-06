@@ -7,6 +7,7 @@ const getStatusColor = (status) => {
     switch(status) {
         case 'PENDING_VERIFICATION': return 'warning';
         case 'APPROVED': return 'success';
+        case 'COLLECTOR_ASSIGNED': return 'info';
         case 'REJECTED': return 'error';
         case 'COMPLETED': return 'primary';
         default: return 'default';
@@ -25,7 +26,7 @@ const OfficeRequestList = () => {
             setRequests(data);
             setError(null);
         } catch (err) {
-            setError('Failed to fetch requests.');
+            setError(err.response?.data?.message || 'Failed to fetch requests.');
         } finally {
             setLoading(false);
         }

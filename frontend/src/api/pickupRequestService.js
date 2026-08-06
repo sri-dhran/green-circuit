@@ -25,5 +25,12 @@ export const pickupRequestService = {
             params: { status, rejectionReason }
         });
         return response.data;
+    },
+
+    assignCollector: async (id, collectorName, collectorPhone, pickupDate, pickupTime) => {
+        const response = await api.put(`/pickup-requests/${id}/assign-collector`, null, {
+            params: { collectorName, collectorPhone, pickupDate, pickupTime }
+        });
+        return response.data;
     }
 };

@@ -13,12 +13,6 @@ const OfficeDashboard = () => {
     const [tabIndex, setTabIndex] = useState(0);
     const [editingOffice, setEditingOffice] = useState(null);
 
-    useEffect(() => {
-        if (!user) {
-            navigate('/login');
-        }
-    }, [user, navigate]);
-
     const handleLogout = () => {
         logout();
         navigate('/login');
@@ -81,6 +75,12 @@ const OfficeDashboard = () => {
                 {tabIndex === 1 && (
                     <Paper sx={{ p: 3, elevation: 3 }}>
                         <OfficeForm office={editingOffice} onSuccess={handleSaveSuccess} />
+                    </Paper>
+                )}
+
+                {tabIndex === 2 && (
+                    <Paper sx={{ p: 3, elevation: 3 }}>
+                        <OfficeRequestList />
                     </Paper>
                 )}
             </Container>

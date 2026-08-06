@@ -14,9 +14,14 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
     const [isRejecting, setIsRejecting] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    const [collectorName, setCollectorName] = useState('');
+    const [collectorPhone, setCollectorPhone] = useState('');
+    const [pickupDate, setPickupDate] = useState('');
+    const [pickupTime, setPickupTime] = useState('');
+
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
-        googleMapsApiKey: "YOUR_API_KEY_HERE"
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY
     });
 
     const handleApprove = async () => {
@@ -35,6 +40,18 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
         setLoading(true);
         try {
             await pickupRequestService.updateRequestStatus(request.id, 'REJECTED', rejectionReason);
+            onActionComplete();
+        } catch (err) {
+            console.error(err);
+            setLoading(false);
+        }
+    };
+
+    const handleAssignCollector = async () => {
+        if (!collectorName || !collectorPhone || !pickupDate || !pickupTime) return;
+        setLoading(true);
+        try {
+            await pickupRequestService.assignCollector(request.id, collectorName, collectorPhone, pickupDate, pickupTime);
             onActionComplete();
         } catch (err) {
             console.error(err);
@@ -103,6 +120,26 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
                         />
                     </Box>
                 )}
+
+                {request.status === 'APPROVED' && (
+                    <Box sx={{ mt: 3, p: 2, bgcolor: '#f9f9f9', borderRadius: 2 }}>
+                        <Typography variant="h6" gutterBottom color="primary">Assign Collector</Typography>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField fullWidth label="Collector Name" value={collectorName} onChange={(e) => setCollectorName(e.target.value)} size="small" />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField fullWidth label="Collector Phone" value={collectorPhone} onChange={(e) => setCollectorPhone(e.target.value)} size="small" />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField fullWidth label="Pickup Date" type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} InputLabelProps={{ shrink: true }} size="small" />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField fullWidth label="Pickup Time" type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} InputLabelProps={{ shrink: true }} size="small" />
+                            </Grid>
+                        </Grid>
+                    </Box>
+                )}
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} disabled={loading}>Close</Button>
@@ -129,6 +166,17 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
                             </Button>
                         )}
                     </>
+                )}
+
+                {request.status === 'APPROVED' && (
+                    <Button 
+                        variant="contained" 
+                        color="primary" 
+                        onClick={handleAssignCollector} 
+                        disabled={!collectorName || !collectorPhone || !pickupDate || !pickupTime || loading}
+                    >
+                        {loading ? <CircularProgress size={24} /> : 'Assign Collector'}
+                    </Button>
                 )}
             </DialogActions>
         </Dialog>

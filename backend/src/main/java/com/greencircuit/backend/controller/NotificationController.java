@@ -30,9 +30,17 @@ public class NotificationController {
     }
 
     @PutMapping("/{id}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
+    public ResponseEntity<Void> markAsRead(@PathVariable Long id, Authentication authentication) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+        
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                
+        if (!notification.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("You are not authorized to access this notification");
+        }
+        
         notification.setRead(true);
         notificationRepository.save(notification);
         return ResponseEntity.ok().build();

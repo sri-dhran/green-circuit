@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { Box, TextField, Button, Typography, Container, Paper, Alert } from '@mui/material';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { Box, TextField, Button, Typography, Container, Paper, Alert, Link } from '@mui/material';
 
 const Login = () => {
     const { login } = useContext(AuthContext);
@@ -21,6 +21,8 @@ const Login = () => {
             const userData = await login(email, password);
             if (userData.role === 'OFFICE') {
                 navigate('/dashboard');
+            } else if (userData.role === 'SUPER_ADMIN') {
+                navigate('/admin');
             } else {
                 navigate('/user-dashboard');
             }
@@ -74,6 +76,11 @@ const Login = () => {
                     >
                         {loading ? 'Signing in...' : 'Sign In'}
                     </Button>
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Link component={RouterLink} to="/register" variant="body2">
+                            Don't have an account? Sign up
+                        </Link>
+                    </Box>
                 </Box>
             </Paper>
         </Container>

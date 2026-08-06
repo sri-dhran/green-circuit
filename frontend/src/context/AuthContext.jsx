@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
+import { userService } from '../api/userService';
 
 export const AuthContext = createContext();
 
@@ -27,8 +28,8 @@ export const AuthProvider = ({ children }) => {
         return userData;
     };
 
-    const register = async (name, email, password, role) => {
-        const response = await api.post('/auth/register', { name, email, password, role });
+    const register = async (name, email, password, role, officeId) => {
+        const response = await api.post('/auth/register', { name, email, password, role, officeId });
         const { token, name: resName, role: resRole, email: resEmail, rewardPoints } = response.data;
         const userData = { name: resName, role: resRole, email: resEmail, rewardPoints };
         
@@ -44,8 +45,19 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    const refreshUser = async () => {
+        try {
+            const userData = await userService.getCurrentUser();
+            localStorage.setItem('user', JSON.stringify(userData));
+            setUser(userData);
+            return userData;
+        } catch (err) {
+            console.error("Failed to refresh user", err);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );

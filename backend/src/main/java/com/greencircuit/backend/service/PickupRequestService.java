@@ -28,14 +28,16 @@ public class PickupRequestService {
     private final UserRepository userRepository;
     private final OfficeRepository officeRepository;
     private final NotificationRepository notificationRepository;
+    private final EmailService emailService;
 
     private final String UPLOAD_DIR = "uploads/";
 
-    public PickupRequestService(PickupRequestRepository pickupRequestRepository, UserRepository userRepository, OfficeRepository officeRepository, NotificationRepository notificationRepository) {
+    public PickupRequestService(PickupRequestRepository pickupRequestRepository, UserRepository userRepository, OfficeRepository officeRepository, NotificationRepository notificationRepository, EmailService emailService) {
         this.pickupRequestRepository = pickupRequestRepository;
         this.userRepository = userRepository;
         this.officeRepository = officeRepository;
         this.notificationRepository = notificationRepository;
+        this.emailService = emailService;
         
         // Ensure upload directory exists
         try {
@@ -90,6 +92,13 @@ public class PickupRequestService {
                 .orElseThrow(() -> new IllegalArgumentException("Request not found"));
         
         RequestStatus newStatus = RequestStatus.valueOf(status);
+        
+        if (newStatus == RequestStatus.COMPLETED && request.getStatus() != RequestStatus.COMPLETED) {
+            User requestUser = request.getUser();
+            requestUser.setRewardPoints(requestUser.getRewardPoints() + 10);
+            userRepository.save(requestUser);
+        }
+        
         request.setStatus(newStatus);
         
         if (newStatus == RequestStatus.REJECTED && rejectionReason != null) {
@@ -106,6 +115,8 @@ public class PickupRequestService {
         
         Notification notification = new Notification(request.getUser(), message);
         notificationRepository.save(notification);
+        
+        emailService.sendEmail(request.getUser().getEmail(), "Green Circuit - Request Update", message);
 
         return updated;
     }
@@ -127,6 +138,8 @@ public class PickupRequestService {
         
         Notification notification = new Notification(request.getUser(), message);
         notificationRepository.save(notification);
+
+        emailService.sendEmail(request.getUser().getEmail(), "Green Circuit - Collector Assigned", message);
 
         return updated;
     }

@@ -6,6 +6,7 @@ const getStatusColor = (status) => {
     switch(status) {
         case 'PENDING_VERIFICATION': return 'warning';
         case 'APPROVED': return 'success';
+        case 'COLLECTOR_ASSIGNED': return 'info';
         case 'REJECTED': return 'error';
         case 'COMPLETED': return 'primary';
         default: return 'default';
@@ -82,6 +83,16 @@ const PickupRequestHistory = () => {
                             <Typography variant="body1"><strong>Quantity:</strong> {selectedRequest.quantity}</Typography>
                             <Typography variant="body1"><strong>Status:</strong> <Chip label={selectedRequest.status} color={getStatusColor(selectedRequest.status)} size="small" sx={{ ml: 1 }} /></Typography>
                             <Typography variant="body1" sx={{ mt: 1 }}><strong>Office:</strong> {selectedRequest.office.officeName}</Typography>
+                            
+                            {(selectedRequest.status === 'COLLECTOR_ASSIGNED' || selectedRequest.status === 'COMPLETED') && (
+                                <Box sx={{ mt: 2, p: 2, bgcolor: '#e3f2fd', borderRadius: 2 }}>
+                                    <Typography variant="subtitle1" color="primary" gutterBottom><strong>Collector Details</strong></Typography>
+                                    <Typography variant="body2"><strong>Name:</strong> {selectedRequest.collectorName}</Typography>
+                                    <Typography variant="body2"><strong>Phone:</strong> {selectedRequest.collectorPhoneNumber}</Typography>
+                                    <Typography variant="body2"><strong>Pickup Date:</strong> {selectedRequest.pickupDate}</Typography>
+                                    <Typography variant="body2"><strong>Pickup Time:</strong> {selectedRequest.pickupTime}</Typography>
+                                </Box>
+                            )}
                             
                             {selectedRequest.photoPath && (
                                 <Box sx={{ mt: 3, textAlign: 'center' }}>

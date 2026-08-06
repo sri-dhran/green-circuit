@@ -35,7 +35,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 const UserDashboard = () => {
-    const { user, logout } = useContext(AuthContext);
+    const { user, logout, refreshUser } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const [location, setLocation] = useState(null);
@@ -50,14 +50,11 @@ const UserDashboard = () => {
 
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
-        googleMapsApiKey: "YOUR_API_KEY_HERE" // Replaced by user later
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY
     });
 
     useEffect(() => {
-        if (!user) {
-            navigate('/login');
-            return;
-        }
+        if (!user) return;
 
         // Get user location
         if (navigator.geolocation) {
@@ -87,6 +84,7 @@ const UserDashboard = () => {
         try {
             const data = await notificationService.getMyNotifications();
             setNotifications(data);
+            if (refreshUser) refreshUser();
         } catch (err) {
             console.error(err);
         }
@@ -166,6 +164,10 @@ const UserDashboard = () => {
                     <Typography variant="subtitle1" sx={{ mr: 2 }}>
                         {user.name}
                     </Typography>
+                    
+                    <Button color="inherit" onClick={() => navigate('/reward-store')} sx={{ mr: 2, border: '1px solid white' }}>
+                        Reward Store
+                    </Button>
                     
                     <IconButton color="inherit" onClick={handleNotificationClick} sx={{ mr: 2 }}>
                         <Badge badgeContent={notifications.filter(n => !n.read).length} color="error">
