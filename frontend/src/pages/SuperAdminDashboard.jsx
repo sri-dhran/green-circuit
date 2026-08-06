@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Container, Typography, AppBar, Toolbar, Button, Grid, Card, CardContent, CircularProgress, Alert } from '@mui/material';
+import { Box, Container, Typography, AppBar, Toolbar, Button, Grid, Card, CircularProgress, Alert } from '@mui/material';
 import { analyticsService } from '../api/analyticsService';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -20,7 +20,7 @@ const SuperAdminDashboard = () => {
             try {
                 const data = await analyticsService.getStats();
                 setStats(data);
-            } catch (err) {
+            } catch {
                 setError('Failed to load analytics');
             } finally {
                 setLoading(false);

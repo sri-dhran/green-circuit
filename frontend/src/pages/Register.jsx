@@ -24,7 +24,7 @@ const Register = () => {
                 try {
                     const data = await officeService.getAllOffices();
                     setOffices(data);
-                } catch (err) {
+                } catch {
                     setError('Failed to fetch offices');
                 }
             };

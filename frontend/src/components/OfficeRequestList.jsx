@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper, Chip, CircularProgress, Alert, Button } from '@mui/material';
+import { Box, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper, Chip, CircularProgress, Alert, Button } from '@mui/material';
 import { pickupRequestService } from '../api/pickupRequestService';
 import OfficeRequestDetailsModal from './OfficeRequestDetailsModal';
 

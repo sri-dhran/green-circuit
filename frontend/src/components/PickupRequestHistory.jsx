@@ -27,7 +27,7 @@ const PickupRequestHistory = () => {
         try {
             const data = await pickupRequestService.getMyRequests();
             setRequests(data);
-        } catch (err) {
+        } catch {
             setError('Failed to fetch request history.');
         } finally {
             setLoading(false);

@@ -60,7 +60,7 @@ const PickupRequestForm = ({ office, onSuccess, onCancel }) => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => sendData(pos.coords.latitude, pos.coords.longitude),
-                (err) => sendData(null, null)
+                (_err) => sendData(null, null)
             );
         } else {
             sendData(null, null);

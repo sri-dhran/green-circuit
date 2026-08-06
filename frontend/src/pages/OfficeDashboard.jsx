@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Typography, AppBar, Toolbar, Button, Paper, Tabs, Tab } from '@mui/material';

@@ -67,7 +67,7 @@ const UserDashboard = () => {
                     setLocation(currentLoc);
                     fetchNearbyOffices(currentLoc);
                 },
-                (error) => {
+                (_error) => {
                     setLocationError('Unable to retrieve your location');
                     fetchNearbyOffices(null); // Fetch without distance sorting
                 }
@@ -78,6 +78,7 @@ const UserDashboard = () => {
         }
 
         fetchNotifications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, navigate]);
 
     const fetchNotifications = async () => {

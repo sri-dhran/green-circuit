@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
 const RewardStore = () => {
-    const { user, logout, refreshUser } = useContext(AuthContext);
+    const { user, refreshUser } = useContext(AuthContext);
     const navigate = useNavigate();
     
     const [rewards, setRewards] = useState([]);
@@ -18,6 +18,7 @@ const RewardStore = () => {
 
     useEffect(() => {
         fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchData = async () => {
@@ -30,7 +31,7 @@ const RewardStore = () => {
             setRewards(rewardsData);
             setRedemptions(redemptionsData);
             if (refreshUser) refreshUser(); // refresh points
-        } catch (err) {
+        } catch {
             setError('Failed to load store data');
         } finally {
             setLoading(false);
