@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import OfficeDashboard from './pages/OfficeDashboard';
-import UserDashboard from './pages/UserDashboard';
-import RewardStore from './pages/RewardStore';
-import SuperAdminDashboard from './pages/SuperAdminDashboard';
-import { AuthProvider } from './context/AuthContext';
-import PrivateRoute from './components/PrivateRoute';
+import Login from './modules/user/pages/Login';
+import Register from './modules/user/pages/Register';
+import OfficeDashboard from './modules/center/pages/OfficeDashboard';
+import UserDashboard from './modules/pickup/pages/UserDashboard';
+import RewardStore from './modules/reward/pages/RewardStore';
+import SuperAdminDashboard from './modules/analytics/pages/SuperAdminDashboard';
+import { AuthProvider } from './modules/user/context/AuthContext';
+import PrivateRoute from './modules/user/components/PrivateRoute';
 import './App.css';
 
 function App() {
