@@ -51,7 +51,8 @@ const Register = () => {
                 navigate('/user-dashboard');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed.');
+            const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Registration failed. Please verify backend server is running.';
+            setError(errorMsg);
         } finally {
             setLoading(false);
         }
