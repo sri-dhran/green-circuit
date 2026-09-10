@@ -22,12 +22,12 @@ public class OfficeSeeder {
                         "Malumichampatti",
                         "Coimbatore",
                         "Tamil Nadu",
-                        null,
-                        null, // latitude to be updated later
-                        null, // longitude to be updated later
+                        "641050",
+                        10.9018,
+                        76.9962,
                         "+91 9840235929",
-                        null,
-                        null,
+                        "contact@techazar.com",
+                        "Electronic waste collection, segregation and certified recycling",
                         true,
                         "ACTIVE",
                         "9:00 AM - 6:00 PM"
@@ -41,11 +41,11 @@ public class OfficeSeeder {
                         "Coimbatore",
                         "Tamil Nadu",
                         "641032",
-                        null, // latitude
-                        null, // longitude
+                        10.8872,
+                        76.9915,
                         "+91 9361328436",
-                        null,
-                        null,
+                        "info@greenerarecyclers.com",
+                        "Industrial and consumer e-waste recycling and disposal",
                         true,
                         "ACTIVE",
                         "9:00 AM - 6:00 PM"
@@ -58,19 +58,39 @@ public class OfficeSeeder {
                         "Malumichampatti",
                         "Coimbatore",
                         "Tamil Nadu",
-                        null,
-                        null, // latitude
-                        null, // longitude
+                        "641050",
+                        10.9085,
+                        76.9940,
                         "+91 9786731317",
-                        null,
-                        null,
+                        "support@adhirarecycling.com",
+                        "Comprehensive waste management and e-waste refurbishment",
                         true,
                         "ACTIVE",
                         "9:00 AM - 6:00 PM"
                 );
 
                 officeRepository.saveAll(List.of(center1, center2, center3));
-                System.out.println("Seeded initial E-Waste Collection Centers.");
+                System.out.println("Seeded initial E-Waste Collection Centers with valid coordinates.");
+            } else {
+                List<Office> existingOffices = officeRepository.findAll();
+                for (Office o : existingOffices) {
+                    if (o.getLatitude() == null || o.getLongitude() == null) {
+                        if (o.getOfficeName() != null && o.getOfficeName().contains("Techazar")) {
+                            o.setLatitude(10.9018);
+                            o.setLongitude(76.9962);
+                        } else if (o.getOfficeName() != null && o.getOfficeName().contains("Green Era")) {
+                            o.setLatitude(10.8872);
+                            o.setLongitude(76.9915);
+                        } else if (o.getOfficeName() != null && o.getOfficeName().contains("Adhira")) {
+                            o.setLatitude(10.9085);
+                            o.setLongitude(76.9940);
+                        } else {
+                            o.setLatitude(10.9018);
+                            o.setLongitude(76.9962);
+                        }
+                        officeRepository.save(o);
+                    }
+                }
             }
         };
     }

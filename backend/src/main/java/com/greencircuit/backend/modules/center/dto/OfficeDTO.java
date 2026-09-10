@@ -47,12 +47,28 @@ public class OfficeDTO {
         this.id = id;
     }
 
+    public Long getOfficeId() {
+        return id;
+    }
+
+    public void setOfficeId(Long officeId) {
+        this.id = officeId;
+    }
+
     public String getOfficeName() {
         return officeName;
     }
 
     public void setOfficeName(String officeName) {
         this.officeName = officeName;
+    }
+
+    public String getName() {
+        return officeName;
+    }
+
+    public void setName(String name) {
+        this.officeName = name;
     }
 
     public String getType() {

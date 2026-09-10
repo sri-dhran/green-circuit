@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
   db:
     image: mysql:8.0
     container_name: greencircuit-db
+    command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: ewaste_db
@@ -23,7 +22,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/ewaste_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - "SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/ewaste_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true"
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
       - SPRING_MAIL_HOST=smtp.mailtrap.io
