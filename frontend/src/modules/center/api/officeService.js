@@ -16,6 +16,13 @@ export const officeService = {
         return response.data;
     },
     
+    getNearbyCenters: async (latitude, longitude, radius = 10.0) => {
+        const response = await api.get(`/collection-centers/nearby`, { 
+            params: { latitude, longitude, radius } 
+        });
+        return response.data;
+    },
+    
     createOffice: async (officeData) => {
         const response = await api.post('/offices', officeData);
         return response.data;

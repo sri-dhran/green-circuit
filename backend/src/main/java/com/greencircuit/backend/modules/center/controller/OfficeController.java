@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/offices")
+@RequestMapping({"/api/offices", "/api/collection-centers"})
 public class OfficeController {
 
     private final OfficeService officeService;
@@ -51,5 +51,13 @@ public class OfficeController {
     @GetMapping("/search")
     public ResponseEntity<List<OfficeDTO>> searchOffices(@RequestParam String query) {
         return ResponseEntity.ok(officeService.searchOffices(query));
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<List<OfficeDTO>> getNearbyCenters(
+            @RequestParam Double latitude,
+            @RequestParam Double longitude,
+            @RequestParam(defaultValue = "10.0") Double radius) {
+        return ResponseEntity.ok(officeService.findNearbyCenters(latitude, longitude, radius));
     }
 }

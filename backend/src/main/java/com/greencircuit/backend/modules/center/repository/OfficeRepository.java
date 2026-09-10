@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface OfficeRepository extends JpaRepository<Office, Long> {
     List<Office> findByOfficeNameContainingIgnoreCase(String officeName);
+    List<Office> findByStatus(String status);
 }
