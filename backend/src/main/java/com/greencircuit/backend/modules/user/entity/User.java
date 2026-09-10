@@ -1,5 +1,6 @@
 package com.greencircuit.backend.modules.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.greencircuit.backend.modules.center.entity.Office;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -71,6 +72,8 @@ public class User implements UserDetails {
         this.email = email;
     }
 
+    @Override
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
@@ -106,6 +109,7 @@ public class User implements UserDetails {
     // UserDetails Methods
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }

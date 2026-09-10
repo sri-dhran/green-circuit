@@ -149,6 +149,7 @@ public class PickupRequestService {
     public PickupRequest updateRequestStatus(Long requestId, String status, String response, String collectorEmail) {
         PickupRequest request = getAndValidateCollectorAccess(requestId, collectorEmail);
         
+        RequestStatus oldStatus = request.getStatus();
         RequestStatus newStatus = RequestStatus.valueOf(status);
         request.setStatus(newStatus);
         
@@ -158,7 +159,7 @@ public class PickupRequestService {
 
         if (newStatus == RequestStatus.COLLECTED || newStatus == RequestStatus.RECYCLED) {
             request.setCompletedAt(LocalDateTime.now());
-            if (newStatus == RequestStatus.RECYCLED && request.getStatus() != RequestStatus.RECYCLED) {
+            if (newStatus == RequestStatus.RECYCLED && oldStatus != RequestStatus.RECYCLED) {
                 User requestUser = request.getUser();
                 requestUser.setRewardPoints(requestUser.getRewardPoints() + 10);
                 userRepository.save(requestUser);
@@ -171,7 +172,7 @@ public class PickupRequestService {
         if (newStatus == RequestStatus.COLLECTED) {
             createAndSendNotification(request.getUser(), "Your e-waste has been successfully collected.", "Green Circuit - E-Waste Collected");
         } else if (newStatus == RequestStatus.RECYCLED) {
-            createAndSendNotification(request.getUser(), "Your e-waste has been successfully processed for recycling.", "Green Circuit - E-Waste Recycled");
+            createAndSendNotification(request.getUser(), "Your e-waste has been successfully processed for recycling. You earned 10 reward points!", "Green Circuit - E-Waste Recycled");
         }
         
         return saved;

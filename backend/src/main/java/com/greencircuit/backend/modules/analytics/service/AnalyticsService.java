@@ -1,5 +1,6 @@
 package com.greencircuit.backend.modules.analytics.service;
 
+import com.greencircuit.backend.modules.pickup.entity.RequestStatus;
 import com.greencircuit.backend.modules.pickup.repository.PickupRequestRepository;
 import com.greencircuit.backend.modules.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -21,10 +22,17 @@ public class AnalyticsService {
         stats.put("totalUsers", userRepository.count());
         stats.put("totalRequests", requestRepository.count());
         
-        long completed = requestRepository.findAll().stream().filter(r -> r.getStatus().name().equals("COMPLETED")).count();
+        var allRequests = requestRepository.findAll();
+        
+        long completed = allRequests.stream()
+                .filter(r -> r.getStatus() == RequestStatus.COLLECTED || r.getStatus() == RequestStatus.RECYCLED)
+                .count();
         stats.put("completedPickups", completed);
         
-        long totalItems = requestRepository.findAll().stream().filter(r -> r.getStatus().name().equals("COMPLETED")).mapToLong(r -> r.getQuantity()).sum();
+        long totalItems = allRequests.stream()
+                .filter(r -> r.getStatus() == RequestStatus.COLLECTED || r.getStatus() == RequestStatus.RECYCLED)
+                .mapToLong(r -> r.getQuantity())
+                .sum();
         stats.put("totalEwasteItemsCollected", totalItems);
         return stats;
     }
