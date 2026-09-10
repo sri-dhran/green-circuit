@@ -20,9 +20,23 @@ export const pickupRequestService = {
         return response.data;
     },
 
-    updateRequestStatus: async (id, status, rejectionReason = '') => {
-        const response = await api.put(`/pickup-requests/${id}/status`, null, {
-            params: { status, rejectionReason }
+    acceptRequest: async (id, responseMsg = '') => {
+        const response = await api.patch(`/pickup-requests/${id}/accept`, null, {
+            params: { response: responseMsg }
+        });
+        return response.data;
+    },
+
+    rejectRequest: async (id, responseMsg = '') => {
+        const response = await api.patch(`/pickup-requests/${id}/reject`, null, {
+            params: { response: responseMsg }
+        });
+        return response.data;
+    },
+
+    updateRequestStatus: async (id, status) => {
+        const response = await api.patch(`/pickup-requests/${id}/status`, null, {
+            params: { status }
         });
         return response.data;
     },

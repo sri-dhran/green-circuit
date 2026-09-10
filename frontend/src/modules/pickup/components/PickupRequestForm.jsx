@@ -7,7 +7,6 @@ import { pickupRequestService } from '../api/pickupRequestService';
 import { officeService } from '../../center/api/officeService';
 
 const categories = ['Smartphone', 'Laptop', 'Tablet', 'Desktop', 'Accessories', 'Other'];
-const conditions = ['New', 'Good', 'Fair', 'Poor', 'Broken'];
 
 const containerStyle = {
     width: '100%',
@@ -18,14 +17,18 @@ const containerStyle = {
 const centerDefault = { lat: 11.0168, lng: 76.9558 }; // Default to Coimbatore roughly
 
 const PickupRequestForm = ({ onSuccess, onCancel }) => {
-    const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         deviceName: '',
         deviceCategory: '',
+        brand: '',
+        model: '',
         quantity: 1,
-        condition: ''
+        description: '',
+        approximateWeight: '',
+        userLocation: ''
     });
     const [file, setFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -49,12 +52,22 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
     };
 
     const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
+        const selectedFile = e.target.files[0];
+        setFile(selectedFile);
+        if (selectedFile) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(selectedFile);
+        } else {
+            setImagePreview(null);
+        }
     };
 
     const handleFindCollectors = () => {
-        if (!formData.deviceName || !formData.deviceCategory || !formData.condition || !file) {
-            setError("Please fill all required device details and upload a photo.");
+        if (!formData.deviceName || !formData.deviceCategory || !formData.description || !file) {
+            setError("Please fill all required device details (Name, Category, Description) and upload a photo.");
             return;
         }
         setError(null);
@@ -69,6 +82,10 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
                         lng: position.coords.longitude
                     };
                     setLocation(currentLoc);
+                    // Generate a generic address or use the one provided
+                    if (!formData.userLocation) {
+                        setFormData(prev => ({ ...prev, userLocation: `Lat: ${currentLoc.lat.toFixed(4)}, Lng: ${currentLoc.lng.toFixed(4)}` }));
+                    }
                     fetchNearbyOffices(currentLoc);
                 },
                 (err) => {
@@ -116,8 +133,12 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
         data.append('officeId', selectedOffice.id);
         data.append('deviceName', formData.deviceName);
         data.append('deviceCategory', formData.deviceCategory);
+        data.append('brand', formData.brand);
+        data.append('model', formData.model);
         data.append('quantity', formData.quantity);
-        data.append('condition', formData.condition);
+        data.append('description', formData.description);
+        if (formData.approximateWeight) data.append('approximateWeight', formData.approximateWeight);
+        if (formData.userLocation) data.append('userLocation', formData.userLocation);
         data.append('file', file);
         if (location) {
             data.append('latitude', location.lat);
@@ -176,6 +197,26 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
                         </Grid>
                         <Grid item xs={12} md={6}>
                             <TextField
+                                fullWidth
+                                margin="normal"
+                                label="Brand"
+                                name="brand"
+                                value={formData.brand}
+                                onChange={handleChange}
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <TextField
+                                fullWidth
+                                margin="normal"
+                                label="Model"
+                                name="model"
+                                value={formData.model}
+                                onChange={handleChange}
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={4}>
+                            <TextField
                                 required
                                 fullWidth
                                 margin="normal"
@@ -187,36 +228,59 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
                                 onChange={handleChange}
                             />
                         </Grid>
-                        <Grid item xs={12} md={6}>
+                        <Grid item xs={12} md={8}>
                             <TextField
-                                select
+                                fullWidth
+                                margin="normal"
+                                type="number"
+                                inputProps={{ min: 0, step: 0.1 }}
+                                label="Approximate Weight (kg)"
+                                name="approximateWeight"
+                                value={formData.approximateWeight}
+                                onChange={handleChange}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
                                 required
                                 fullWidth
                                 margin="normal"
-                                label="Condition"
-                                name="condition"
-                                value={formData.condition}
+                                label="Description (e.g. Old laptop not working)"
+                                name="description"
+                                multiline
+                                rows={2}
+                                value={formData.description}
                                 onChange={handleChange}
-                            >
-                                {conditions.map((option) => (
-                                    <MenuItem key={option} value={option}>
-                                        {option}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                fullWidth
+                                margin="normal"
+                                label="Your Pickup Location (Address)"
+                                name="userLocation"
+                                value={formData.userLocation}
+                                onChange={handleChange}
+                                placeholder="Enter address or allow GPS to detect"
+                            />
                         </Grid>
                     </Grid>
 
                     <Box sx={{ mt: 2, mb: 3 }}>
                         <Typography variant="body2" gutterBottom>
-                            Upload Device Photo *
+                            Upload Device Photo * (JPG, PNG, WEBP)
                         </Typography>
                         <input 
                             type="file" 
-                            accept="image/*" 
+                            accept="image/jpeg, image/png, image/webp" 
                             onChange={handleFileChange}
                             required
                         />
+                        {imagePreview && (
+                            <Box mt={2}>
+                                <img src={imagePreview} alt="Preview" style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: '8px' }} />
+                            </Box>
+                        )}
                     </Box>
 
                     <Button 
@@ -234,19 +298,33 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
                 <Box component="form" onSubmit={handleSubmit}>
                     <Card sx={{ mb: 3, border: '1px solid #4caf50', bgcolor: '#f1f8e9' }}>
                         <CardContent>
-                            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                                 <Typography variant="h6" color="primary">
-                                    Selected Collection Center
+                                    Collection Request Confirmation
                                 </Typography>
                                 <Button size="small" variant="outlined" onClick={() => setSelectedOffice(null)}>
                                     Change Collector
                                 </Button>
                             </Box>
-                            <Typography variant="body1"><strong>Name:</strong> {selectedOffice.officeName}</Typography>
-                            <Typography variant="body2"><strong>Area:</strong> {selectedOffice.area || selectedOffice.address}</Typography>
-                            {selectedOffice.distanceKm && (
-                                <Typography variant="body2"><strong>Distance:</strong> {selectedOffice.distanceKm} km</Typography>
-                            )}
+                            
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={8}>
+                                    <Typography variant="body1"><strong>Selected Collector:</strong> {selectedOffice.officeName}</Typography>
+                                    <Typography variant="body2" sx={{ mb: 1 }}><strong>Area:</strong> {selectedOffice.area || selectedOffice.address}</Typography>
+                                    
+                                    <Typography variant="body2"><strong>Device:</strong> {formData.deviceName}</Typography>
+                                    <Typography variant="body2"><strong>Category:</strong> {formData.deviceCategory}</Typography>
+                                    <Typography variant="body2"><strong>Description:</strong> {formData.description}</Typography>
+                                    <Typography variant="body2"><strong>Location:</strong> {formData.userLocation}</Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={4}>
+                                    {imagePreview && (
+                                        <Box display="flex" justifyContent="center">
+                                            <img src={imagePreview} alt="E-Waste Preview" style={{ maxWidth: '100%', maxHeight: '120px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                                        </Box>
+                                    )}
+                                </Grid>
+                            </Grid>
                         </CardContent>
                     </Card>
 
@@ -257,7 +335,7 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
                             </Button>
                         )}
                         <Button type="submit" variant="contained" color="success" disabled={loading} size="large">
-                            {loading ? <CircularProgress size={24} /> : 'Continue & Submit'}
+                            {loading ? <CircularProgress size={24} /> : 'Send Collection Request'}
                         </Button>
                     </Box>
                 </Box>

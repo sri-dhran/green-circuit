@@ -5,11 +5,13 @@ import OfficeRequestDetailsModal from './OfficeRequestDetailsModal';
 
 const getStatusColor = (status) => {
     switch(status) {
-        case 'PENDING_VERIFICATION': return 'warning';
-        case 'APPROVED': return 'success';
-        case 'COLLECTOR_ASSIGNED': return 'info';
+        case 'PENDING': return 'warning';
+        case 'ACCEPTED': return 'info';
         case 'REJECTED': return 'error';
-        case 'COMPLETED': return 'primary';
+        case 'PICKUP_SCHEDULED': return 'primary';
+        case 'COLLECTED': return 'secondary';
+        case 'RECYCLED': return 'success';
+        case 'CANCELLED': return 'default';
         default: return 'default';
     }
 };
@@ -46,7 +48,7 @@ const OfficeRequestList = () => {
 
     if (loading && requests.length === 0) return <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>;
     if (error && requests.length === 0) return <Alert severity="error">{error}</Alert>;
-    if (requests.length === 0) return <Alert severity="info">No pickup requests found.</Alert>;
+    if (requests.length === 0) return <Alert severity="info">No incoming collection requests found.</Alert>;
 
     return (
         <Box>
@@ -54,9 +56,10 @@ const OfficeRequestList = () => {
                 <Table>
                     <TableHead sx={{ bgcolor: '#f5f5f5' }}>
                         <TableRow>
-                            <TableCell><strong>Date</strong></TableCell>
+                            <TableCell><strong>Requested</strong></TableCell>
                             <TableCell><strong>User</strong></TableCell>
-                            <TableCell><strong>Device</strong></TableCell>
+                            <TableCell><strong>E-Waste</strong></TableCell>
+                            <TableCell><strong>Location</strong></TableCell>
                             <TableCell><strong>Status</strong></TableCell>
                             <TableCell><strong>Actions</strong></TableCell>
                         </TableRow>
@@ -64,15 +67,16 @@ const OfficeRequestList = () => {
                     <TableBody>
                         {requests.map((req) => (
                             <TableRow key={req.id} hover>
-                                <TableCell>{new Date(req.createdAt).toLocaleDateString()}</TableCell>
+                                <TableCell>{new Date(req.createdAt).toLocaleString()}</TableCell>
                                 <TableCell>{req.user.name}</TableCell>
                                 <TableCell>{req.deviceName}</TableCell>
+                                <TableCell>{req.userLocation || 'Location not provided'}</TableCell>
                                 <TableCell>
                                     <Chip label={req.status} color={getStatusColor(req.status)} size="small" />
                                 </TableCell>
                                 <TableCell>
                                     <Button size="small" variant="contained" onClick={() => setSelectedRequest(req)}>
-                                        Verify
+                                        View Details
                                     </Button>
                                 </TableCell>
                             </TableRow>

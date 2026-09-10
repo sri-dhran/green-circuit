@@ -1,9 +1,11 @@
 package com.greencircuit.backend.modules.pickup.entity;
 
 public enum RequestStatus {
-    PENDING_VERIFICATION,
-    APPROVED,
-    COLLECTOR_ASSIGNED,
+    PENDING,
+    ACCEPTED,
     REJECTED,
-    COMPLETED
+    PICKUP_SCHEDULED,
+    COLLECTED,
+    RECYCLED,
+    CANCELLED
 }
