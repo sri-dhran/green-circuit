@@ -38,7 +38,7 @@ services:
     build: ./frontend
     container_name: greencircuit-frontend
     ports:
-      - "80:80"
+      - "3000:80"
     depends_on:
       - backend
     restart: on-failure
