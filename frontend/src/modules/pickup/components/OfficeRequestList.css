@@ -1,0 +1,53 @@
+/* ============================================================
+   OfficeRequestList Styles — Liquid Glass Incoming Requests
+   ============================================================ */
+
+.gc-office-req-wrapper {
+  width: 100%;
+}
+
+.gc-office-req-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gc-filter-group {
+  display: flex;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--gc-border);
+  flex-wrap: wrap;
+}
+
+.gc-filter-btn {
+  background: transparent;
+  border: none;
+  color: var(--gc-text-secondary);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.gc-filter-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gc-filter-btn.active {
+  background: rgba(0, 230, 118, 0.18);
+  color: #00ff88;
+  border: 1px solid rgba(0, 230, 118, 0.35);
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
+}

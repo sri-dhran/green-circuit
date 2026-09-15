@@ -1,0 +1,16 @@
+/* ============================================================
+   OfficeForm Styles — Liquid Glass Office Registration Form
+   ============================================================ */
+
+.gc-office-form-wrapper {
+  width: 100%;
+}
+
+.gc-office-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}

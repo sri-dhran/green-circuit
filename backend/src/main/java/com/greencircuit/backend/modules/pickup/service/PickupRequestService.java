@@ -150,7 +150,12 @@ public class PickupRequestService {
         PickupRequest request = getAndValidateCollectorAccess(requestId, collectorEmail);
         
         RequestStatus oldStatus = request.getStatus();
-        RequestStatus newStatus = RequestStatus.valueOf(status);
+        RequestStatus newStatus;
+        try {
+            newStatus = RequestStatus.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status: " + status + ". Valid statuses are: PENDING, ACCEPTED, REJECTED, PICKUP_SCHEDULED, COLLECTED, RECYCLED, CANCELLED");
+        }
         request.setStatus(newStatus);
         
         if (response != null) {

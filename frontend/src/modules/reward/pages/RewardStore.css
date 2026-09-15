@@ -1,0 +1,243 @@
+/* ============================================================
+   RewardStore Styles — Liquid Glass Eco Rewards Marketplace
+   ============================================================ */
+
+.gc-reward-root {
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--gc-bg);
+  padding-bottom: 60px;
+}
+
+.gc-reward-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.gc-reward-hero-card {
+  padding: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  background: radial-gradient(circle at 80% 20%, rgba(255, 179, 0, 0.12) 0%, rgba(14, 30, 22, 0.75) 100%);
+  border-color: rgba(255, 193, 7, 0.25);
+  margin-bottom: 24px;
+}
+
+.gc-hero-left {
+  max-width: 650px;
+}
+
+.gc-reward-heading {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.gc-reward-subheading {
+  font-size: 0.94rem;
+  color: var(--gc-text-secondary);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.gc-hero-points-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 193, 7, 0.35);
+  padding: 16px 24px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 179, 0, 0.15);
+}
+
+.gc-hero-trophy {
+  font-size: 2.5rem;
+  filter: drop-shadow(0 0 12px rgba(255, 179, 0, 0.5));
+}
+
+.gc-hero-points-data {
+  display: flex;
+  flex-direction: column;
+}
+
+.gc-hero-points-num {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #ffd54f;
+  line-height: 1;
+}
+
+.gc-hero-points-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--gc-text-muted);
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.gc-reward-success-banner {
+  background: rgba(0, 230, 118, 0.15);
+  border: 1px solid rgba(0, 230, 118, 0.4);
+  color: #69f0ae;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 0 20px rgba(0, 230, 118, 0.2);
+}
+
+.gc-reward-tabs-bar {
+  margin-bottom: 24px;
+}
+
+/* Rewards Grid */
+.gc-rewards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.gc-reward-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 20px;
+}
+
+.gc-reward-img-wrapper {
+  height: 190px;
+  overflow: hidden;
+  position: relative;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.gc-reward-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gc-reward-card:hover .gc-reward-img {
+  transform: scale(1.05);
+}
+
+.gc-reward-content {
+  padding: 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.gc-reward-cost-pill {
+  display: inline-block;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #ffca28;
+  background: rgba(255, 179, 0, 0.15);
+  border: 1px solid rgba(255, 179, 0, 0.3);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  margin-bottom: 10px;
+  width: fit-content;
+}
+
+.gc-reward-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 6px 0;
+}
+
+.gc-reward-desc {
+  font-size: 0.85rem;
+  color: var(--gc-text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.gc-reward-footer {
+  padding: 0 20px 20px 20px;
+}
+
+/* Redemptions List */
+.gc-redemptions-card {
+  padding: 28px;
+}
+
+.gc-redemptions-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+}
+
+.gc-redemptions-sub {
+  font-size: 0.85rem;
+  color: var(--gc-text-secondary);
+  margin: 0 0 20px 0;
+}
+
+.gc-redemptions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gc-redemption-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--gc-border);
+  border-radius: 14px;
+}
+
+.gc-redemption-item-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.gc-redemption-icon {
+  font-size: 1.6rem;
+}
+
+.gc-redemption-name {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 3px 0;
+}
+
+.gc-redemption-date {
+  font-size: 0.78rem;
+  color: var(--gc-text-muted);
+}
+
+.gc-redemption-cost {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ff5252;
+}
+
+@media (max-width: 768px) {
+  .gc-reward-hero-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

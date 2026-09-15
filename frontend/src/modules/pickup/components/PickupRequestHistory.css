@@ -1,0 +1,308 @@
+/* ============================================================
+   PickupRequestHistory Styles — Apple Liquid Glass Tracking UI
+   ============================================================ */
+
+.gc-history-wrapper {
+  width: 100%;
+}
+
+.gc-history-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 0;
+  color: var(--gc-text-secondary);
+}
+
+.gc-empty-history {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.gc-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.gc-empty-history h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 6px 0;
+}
+
+.gc-empty-history p {
+  color: var(--gc-text-secondary);
+  font-size: 0.9rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.gc-req-id {
+  font-family: monospace;
+  font-weight: 600;
+  color: #00d4ff;
+  font-size: 0.88rem;
+}
+
+.gc-req-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid var(--gc-border);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.gc-no-photo-badge {
+  font-size: 0.72rem;
+  color: var(--gc-text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.gc-device-title-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.gc-device-main {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.gc-device-sub {
+  font-size: 0.75rem;
+  color: var(--gc-text-muted);
+}
+
+.gc-collector-name {
+  color: var(--gc-text-secondary);
+  font-size: 0.88rem;
+}
+
+.gc-req-date {
+  color: var(--gc-text-muted);
+  font-size: 0.84rem;
+}
+
+.gc-track-btn {
+  padding: 6px 14px;
+  font-size: 0.82rem;
+}
+
+/* Tracking Modal & Timeline */
+.gc-tracking-modal {
+  max-width: 780px;
+  padding: 24px;
+}
+
+.gc-timeline-container {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--gc-border);
+  border-radius: 18px;
+  padding: 24px 20px;
+  margin-bottom: 24px;
+}
+
+.gc-timeline-track {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin-top: 10px;
+}
+
+.gc-timeline-track::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 30px;
+  right: 30px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 1;
+}
+
+.gc-timeline-progress-bar {
+  position: absolute;
+  top: 16px;
+  left: 30px;
+  height: 3px;
+  background: linear-gradient(90deg, #00c967, #00e676);
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.6);
+  z-index: 1;
+  transition: width 0.4s ease;
+}
+
+.gc-timeline-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  width: 90px;
+}
+
+.gc-node-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #091a10;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: var(--gc-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.gc-timeline-node.completed .gc-node-circle {
+  background: #00c967;
+  border-color: #00e676;
+  color: #020d08;
+  box-shadow: 0 0 14px rgba(0, 230, 118, 0.5);
+}
+
+.gc-timeline-node.current .gc-node-circle {
+  border-color: #00e676;
+  background: #0a2617;
+  color: #00ff88;
+  box-shadow: 0 0 18px rgba(0, 230, 118, 0.7);
+  animation: pulseNode 2s infinite;
+}
+
+@keyframes pulseNode {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.gc-node-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.gc-node-desc {
+  font-size: 0.68rem;
+  color: var(--gc-text-muted);
+  margin-top: 2px;
+}
+
+/* Scheduled Banner */
+.gc-scheduled-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.gc-scheduled-icon {
+  font-size: 2rem;
+}
+
+.gc-scheduled-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #80d8ff;
+  margin: 0 0 4px 0;
+}
+
+.gc-scheduled-text {
+  font-size: 0.82rem;
+  color: var(--gc-text-secondary);
+  margin: 0 0 3px 0;
+}
+
+/* Details Grid */
+.gc-details-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+}
+
+.gc-details-section-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #00e676;
+  margin: 0 0 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 4px;
+}
+
+.gc-detail-pair {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  font-size: 0.85rem;
+}
+
+.gc-detail-key {
+  color: var(--gc-text-muted);
+}
+
+.gc-detail-val {
+  color: #ffffff;
+  font-weight: 500;
+  text-align: right;
+  max-width: 60%;
+}
+
+.gc-modal-photo-wrapper {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--gc-border);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  height: 240px;
+}
+
+.gc-modal-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gc-no-photo-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed var(--gc-border);
+  border-radius: 14px;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  color: var(--gc-text-muted);
+  font-size: 0.85rem;
+}
+
+.gc-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 768px) {
+  .gc-details-grid {
+    grid-template-columns: 1fr;
+  }
+  .gc-timeline-track {
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+}

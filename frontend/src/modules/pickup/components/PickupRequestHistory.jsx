@@ -1,175 +1,320 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper, Chip, CircularProgress, Alert, Button, Dialog, DialogTitle, DialogContent, DialogActions, Stepper, Step, StepLabel } from '@mui/material';
 import { pickupRequestService } from '../api/pickupRequestService';
+import { getImageUrl } from '../../../common/api/axiosConfig';
+import './PickupRequestHistory.css';
 
-const getStatusColor = (status) => {
-    switch(status) {
-        case 'PENDING': return 'warning';
-        case 'ACCEPTED': return 'info';
-        case 'REJECTED': return 'error';
-        case 'PICKUP_SCHEDULED': return 'primary';
-        case 'COLLECTED': return 'secondary';
-        case 'RECYCLED': return 'success';
-        case 'CANCELLED': return 'default';
-        default: return 'default';
-    }
+const getStatusChipClass = (status) => {
+  switch (status) {
+    case 'PENDING': return 'gc-chip-pending';
+    case 'ACCEPTED': return 'gc-chip-accepted';
+    case 'PICKUP_SCHEDULED': return 'gc-chip-scheduled';
+    case 'COLLECTED': return 'gc-chip-collected';
+    case 'RECYCLED': return 'gc-chip-recycled';
+    case 'REJECTED': return 'gc-chip-rejected';
+    default: return 'gc-chip-pending';
+  }
 };
 
-const getStatusStep = (status) => {
-    switch(status) {
-        case 'PENDING': return 0;
-        case 'ACCEPTED': return 1;
-        case 'PICKUP_SCHEDULED': return 2;
-        case 'COLLECTED': return 3;
-        case 'RECYCLED': return 4;
-        case 'REJECTED': return 1; // Special case
-        case 'CANCELLED': return 0;
-        default: return 0;
-    }
+const getStatusStepIndex = (status) => {
+  switch (status) {
+    case 'PENDING': return 0;
+    case 'ACCEPTED': return 1;
+    case 'PICKUP_SCHEDULED': return 2;
+    case 'COLLECTED': return 3;
+    case 'RECYCLED': return 4;
+    default: return 0;
+  }
 };
 
-const steps = ['Request Submitted', 'Collector Accepted', 'Pickup Scheduled', 'E-Waste Collected', 'Recycled'];
+const TIMELINE_STEPS = [
+  { label: 'Submitted', desc: 'Request logged' },
+  { label: 'Accepted', desc: 'Office assigned' },
+  { label: 'Scheduled', desc: 'Agent dispatched' },
+  { label: 'Collected', desc: 'Device picked up' },
+  { label: 'Recycled', desc: 'Points awarded' },
+];
 
 const PickupRequestHistory = () => {
-    const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [selectedRequest, setSelectedRequest] = useState(null);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [imageError, setImageError] = useState(false);
 
-    useEffect(() => {
-        fetchHistory();
-    }, []);
+  useEffect(() => {
+    fetchHistory();
+  }, []);
 
-    const fetchHistory = async () => {
-        try {
-            const data = await pickupRequestService.getMyRequests();
-            setRequests(data);
-        } catch {
-            setError('Failed to fetch request history.');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const fetchHistory = async () => {
+    try {
+      const data = await pickupRequestService.getMyRequests();
+      setRequests(Array.isArray(data) ? data : []);
+    } catch {
+      setError('Failed to fetch request history.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (loading) return <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>;
-    if (error) return <Alert severity="error">{error}</Alert>;
-    if (requests.length === 0) return <Alert severity="info">You have no pickup requests.</Alert>;
+  const handleOpenModal = (req) => {
+    setSelectedRequest(req);
+    setImageError(false);
+  };
 
+  if (loading) {
     return (
-        <Box>
-            <TableContainer component={Paper} elevation={2}>
-                <Table>
-                    <TableHead sx={{ bgcolor: '#f5f5f5' }}>
-                        <TableRow>
-                            <TableCell><strong>Request ID</strong></TableCell>
-                            <TableCell><strong>Photo</strong></TableCell>
-                            <TableCell><strong>Device</strong></TableCell>
-                            <TableCell><strong>Selected Collector</strong></TableCell>
-                            <TableCell><strong>Requested Date</strong></TableCell>
-                            <TableCell><strong>Status</strong></TableCell>
-                            <TableCell><strong>Actions</strong></TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {requests.map((req) => (
-                            <TableRow key={req.id} hover>
-                                <TableCell>REQ-{req.id}</TableCell>
-                                <TableCell>
-                                    {req.photoPath ? (
-                                        <img src={`http://localhost:8080${req.photoPath}`} alt="Device" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                                    ) : 'No Photo'}
-                                </TableCell>
-                                <TableCell>{req.brand} {req.model} ({req.deviceName})</TableCell>
-                                <TableCell>{req.office.officeName}</TableCell>
-                                <TableCell>{new Date(req.createdAt).toLocaleDateString()}</TableCell>
-                                <TableCell>
-                                    <Chip label={req.status} color={getStatusColor(req.status)} size="small" />
-                                </TableCell>
-                                <TableCell>
-                                    <Button size="small" variant="outlined" onClick={() => setSelectedRequest(req)}>
-                                        View
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-
-            {/* Request Details Modal */}
-            <Dialog open={!!selectedRequest} onClose={() => setSelectedRequest(null)} maxWidth="md" fullWidth>
-                <DialogTitle>Request Details (REQ-{selectedRequest?.id})</DialogTitle>
-                <DialogContent dividers>
-                    {selectedRequest && (
-                        <Box>
-                            {/* Status Timeline */}
-                            <Box sx={{ width: '100%', mb: 4, mt: 2 }}>
-                                {selectedRequest.status === 'REJECTED' || selectedRequest.status === 'CANCELLED' ? (
-                                    <Alert severity="error">
-                                        Request was {selectedRequest.status}.
-                                        {selectedRequest.collectorResponse && ` Reason: ${selectedRequest.collectorResponse}`}
-                                    </Alert>
-                                ) : (
-                                    <Stepper activeStep={getStatusStep(selectedRequest.status)} alternativeLabel>
-                                        {steps.map((label) => (
-                                            <Step key={label}>
-                                                <StepLabel>{label}</StepLabel>
-                                            </Step>
-                                        ))}
-                                    </Stepper>
-                                )}
-                            </Box>
-
-                            <Box display="flex" gap={4} flexWrap="wrap">
-                                <Box flex={1} minWidth="300px">
-                                    <Typography variant="h6" gutterBottom color="primary">Device Details</Typography>
-                                    <Typography variant="body2"><strong>Name:</strong> {selectedRequest.deviceName}</Typography>
-                                    <Typography variant="body2"><strong>Category:</strong> {selectedRequest.deviceCategory}</Typography>
-                                    <Typography variant="body2"><strong>Brand/Model:</strong> {selectedRequest.brand} / {selectedRequest.model}</Typography>
-                                    <Typography variant="body2"><strong>Description:</strong> {selectedRequest.description}</Typography>
-                                    <Typography variant="body2"><strong>Quantity:</strong> {selectedRequest.quantity}</Typography>
-                                    {selectedRequest.approximateWeight && (
-                                        <Typography variant="body2"><strong>Weight:</strong> {selectedRequest.approximateWeight} kg</Typography>
-                                    )}
-                                    <Typography variant="body2"><strong>Location:</strong> {selectedRequest.userLocation}</Typography>
-                                    
-                                    <Typography variant="h6" gutterBottom color="primary" sx={{ mt: 2 }}>Collector Details</Typography>
-                                    <Typography variant="body2"><strong>Center:</strong> {selectedRequest.office.officeName}</Typography>
-                                    <Typography variant="body2"><strong>Address:</strong> {selectedRequest.office.address}</Typography>
-                                    
-                                    {(selectedRequest.status === 'PICKUP_SCHEDULED' || selectedRequest.status === 'COLLECTED') && (
-                                        <Box sx={{ mt: 2, p: 2, bgcolor: '#e3f2fd', borderRadius: 2 }}>
-                                            <Typography variant="subtitle2" color="primary" gutterBottom><strong>Scheduled Pickup</strong></Typography>
-                                            <Typography variant="body2"><strong>Agent:</strong> {selectedRequest.collectorName}</Typography>
-                                            <Typography variant="body2"><strong>Phone:</strong> {selectedRequest.collectorPhoneNumber}</Typography>
-                                            <Typography variant="body2"><strong>Date:</strong> {selectedRequest.pickupDate}</Typography>
-                                            <Typography variant="body2"><strong>Time:</strong> {selectedRequest.pickupTime}</Typography>
-                                        </Box>
-                                    )}
-                                </Box>
-                                
-                                <Box flex={1} minWidth="250px" display="flex" flexDirection="column" alignItems="center">
-                                    <Typography variant="h6" gutterBottom color="primary">E-Waste Photo</Typography>
-                                    {selectedRequest.photoPath ? (
-                                        <img 
-                                            src={`http://localhost:8080${selectedRequest.photoPath}`} 
-                                            alt="Device" 
-                                            style={{ maxWidth: '100%', maxHeight: '250px', borderRadius: '8px', border: '1px solid #ddd' }} 
-                                        />
-                                    ) : (
-                                        <Typography color="text.secondary">No photo attached.</Typography>
-                                    )}
-                                </Box>
-                            </Box>
-                        </Box>
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setSelectedRequest(null)} variant="contained">Close</Button>
-                </DialogActions>
-            </Dialog>
-        </Box>
+      <div className="gc-history-loading">
+        <div className="gc-spinner" />
+        <span>Loading your pickup history…</span>
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="gc-form-error-banner">
+        <span>⚠️ {error}</span>
+        <button type="button" className="gc-btn-secondary" onClick={fetchHistory}>Retry</button>
+      </div>
+    );
+  }
+
+  if (requests.length === 0) {
+    return (
+      <div className="gc-glass-card gc-empty-history">
+        <div className="gc-empty-icon">📦</div>
+        <h3>No Pickup Requests Yet</h3>
+        <p>You haven’t submitted any e-waste for recycling. Submit your first request to earn eco rewards!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="gc-history-wrapper">
+      {/* Desktop / Tablet Table View */}
+      <div className="gc-table-container">
+        <table className="gc-table gc-table-responsive">
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>Photo</th>
+              <th>Device</th>
+              <th>Collector</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th style={{ textAlign: 'right' }}>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {requests.map((req) => (
+              <tr key={req.id}>
+                <td>
+                  <span className="gc-req-id">REQ-{req.id}</span>
+                </td>
+                <td>
+                  {req.photoPath ? (
+                    <img
+                      src={getImageUrl(req.photoPath)}
+                      alt={req.deviceName}
+                      className="gc-req-thumb"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <span className="gc-no-photo-badge">No Photo</span>
+                  )}
+                </td>
+                <td>
+                  <div className="gc-device-title-cell">
+                    <span className="gc-device-main">{req.deviceName}</span>
+                    <span className="gc-device-sub">{req.brand} {req.model} • {req.deviceCategory}</span>
+                  </div>
+                </td>
+                <td>
+                  <span className="gc-collector-name">{req.office?.officeName || 'Assigned Center'}</span>
+                </td>
+                <td>
+                  <span className="gc-req-date">{new Date(req.createdAt).toLocaleDateString()}</span>
+                </td>
+                <td>
+                  <span className={`gc-chip ${getStatusChipClass(req.status)}`}>
+                    {req.status?.replace('_', ' ')}
+                  </span>
+                </td>
+                <td style={{ textAlign: 'right' }}>
+                  <button
+                    type="button"
+                    className="gc-btn-secondary gc-track-btn"
+                    onClick={() => handleOpenModal(req)}
+                  >
+                    Track Details
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ── Request Details & Tracking Modal ── */}
+      {selectedRequest && (
+        <div className="gc-modal-backdrop" onClick={() => setSelectedRequest(null)}>
+          <div className="gc-modal-window gc-tracking-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="gc-modal-header">
+              <div>
+                <span className="gc-chip gc-chip-accepted" style={{ marginBottom: '6px' }}>
+                  REQ-{selectedRequest.id}
+                </span>
+                <h3 className="gc-modal-title">E-Waste Pickup Tracking</h3>
+                <p className="gc-modal-subtitle">
+                  Submitted on {new Date(selectedRequest.createdAt).toLocaleString()}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="gc-modal-close-btn"
+                onClick={() => setSelectedRequest(null)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="gc-modal-body">
+              {/* Status Timeline */}
+              {selectedRequest.status === 'REJECTED' || selectedRequest.status === 'CANCELLED' ? (
+                <div className="gc-form-error-banner" style={{ marginBottom: '24px' }}>
+                  <span>
+                    <strong>Status: {selectedRequest.status}</strong>
+                    {selectedRequest.collectorResponse && ` — ${selectedRequest.collectorResponse}`}
+                  </span>
+                </div>
+              ) : (
+                <div className="gc-timeline-container">
+                  <div className="gc-timeline-track">
+                    <div
+                      className="gc-timeline-progress-bar"
+                      style={{
+                        width: `${(getStatusStepIndex(selectedRequest.status) / (TIMELINE_STEPS.length - 1)) * 100}%`
+                      }}
+                    />
+                    {TIMELINE_STEPS.map((step, idx) => {
+                      const currentStep = getStatusStepIndex(selectedRequest.status);
+                      const isCompleted = idx <= currentStep;
+                      const isCurrent = idx === currentStep;
+
+                      return (
+                        <div
+                          key={step.label}
+                          className={`gc-timeline-node ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}`}
+                        >
+                          <div className="gc-node-circle">
+                            {isCompleted ? '✓' : idx + 1}
+                          </div>
+                          <span className="gc-node-label">{step.label}</span>
+                          <span className="gc-node-desc">{step.desc}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Scheduled Pickup Banner if applicable */}
+              {(selectedRequest.status === 'PICKUP_SCHEDULED' || selectedRequest.status === 'COLLECTED') && (
+                <div className="gc-scheduled-card">
+                  <div className="gc-scheduled-icon">🚚</div>
+                  <div>
+                    <h4 className="gc-scheduled-title">Scheduled Pickup in Progress</h4>
+                    <p className="gc-scheduled-text">
+                      <strong>Agent:</strong> {selectedRequest.collectorName || 'Eco Logistics Agent'} •{' '}
+                      <strong>Phone:</strong> {selectedRequest.collectorPhoneNumber || 'Provided upon dispatch'}
+                    </p>
+                    <p className="gc-scheduled-text">
+                      <strong>Date & Time:</strong> {selectedRequest.pickupDate} at {selectedRequest.pickupTime}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Content Grid: Device Details & Photo */}
+              <div className="gc-details-grid">
+                <div className="gc-details-col">
+                  <h4 className="gc-details-section-title">Device Specifications</h4>
+                  <div className="gc-detail-pair">
+                    <span className="gc-detail-key">Device Name</span>
+                    <span className="gc-detail-val">{selectedRequest.deviceName}</span>
+                  </div>
+                  <div className="gc-detail-pair">
+                    <span className="gc-detail-key">Category</span>
+                    <span className="gc-detail-val">{selectedRequest.deviceCategory}</span>
+                  </div>
+                  <div className="gc-detail-pair">
+                    <span className="gc-detail-key">Brand & Model</span>
+                    <span className="gc-detail-val">{selectedRequest.brand || 'N/A'} {selectedRequest.model || ''}</span>
+                  </div>
+                  <div className="gc-detail-pair">
+                    <span className="gc-detail-key">Quantity</span>
+                    <span className="gc-detail-val">{selectedRequest.quantity} unit(s)</span>
+                  </div>
+                  {selectedRequest.approximateWeight && (
+                    <div className="gc-detail-pair">
+                      <span className="gc-detail-key">Approx Weight</span>
+                      <span className="gc-detail-val">{selectedRequest.approximateWeight} kg</span>
+                    </div>
+                  )}
+                  <div className="gc-detail-pair">
+                    <span className="gc-detail-key">Pickup Location</span>
+                    <span className="gc-detail-val">{selectedRequest.userLocation || 'Marked on GPS'}</span>
+                  </div>
+                  <div className="gc-detail-pair">
+                    <span className="gc-detail-key">Condition Notes</span>
+                    <span className="gc-detail-val">{selectedRequest.description}</span>
+                  </div>
+
+                  <h4 className="gc-details-section-title" style={{ marginTop: '18px' }}>Authorized Center</h4>
+                  <div className="gc-detail-pair">
+                    <span className="gc-detail-key">Office Name</span>
+                    <span className="gc-detail-val">{selectedRequest.office?.officeName}</span>
+                  </div>
+                  <div className="gc-detail-pair">
+                    <span className="gc-detail-key">Address</span>
+                    <span className="gc-detail-val">{selectedRequest.office?.address}</span>
+                  </div>
+                </div>
+
+                <div className="gc-details-col gc-photo-col">
+                  <h4 className="gc-details-section-title">Device Verification Photo</h4>
+                  {selectedRequest.photoPath && !imageError ? (
+                    <div className="gc-modal-photo-wrapper">
+                      <img
+                        src={getImageUrl(selectedRequest.photoPath)}
+                        alt="E-Waste"
+                        className="gc-modal-photo"
+                        onError={() => setImageError(true)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="gc-no-photo-box">
+                      <span>📷 No photo attached or image preview unavailable</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="gc-modal-footer">
+              <button
+                type="button"
+                className="gc-btn-secondary"
+                onClick={() => setSelectedRequest(null)}
+              >
+                Close Tracking
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default PickupRequestHistory;

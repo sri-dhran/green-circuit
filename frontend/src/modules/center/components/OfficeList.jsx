@@ -1,137 +1,184 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-    Paper, Button, TextField, Box, IconButton, Typography, CircularProgress,
-    InputAdornment
-} from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { officeService } from '../api/officeService';
+import './OfficeList.css';
 
 const OfficeList = ({ onEdit }) => {
-    const [offices, setOffices] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
+  const [offices, setOffices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState('');
 
-    useEffect(() => {
+  useEffect(() => {
+    fetchOffices();
+  }, []);
+
+  const fetchOffices = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await officeService.getAllOffices();
+      setOffices(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error fetching offices:', err);
+      setError('Unable to fetch office directory.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      if (searchQuery.trim() === '') {
         fetchOffices();
-    }, []);
+      } else {
+        const data = await officeService.searchOffices(searchQuery);
+        setOffices(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error('Error searching offices:', err);
+      setError('Search failed. Please retry.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const fetchOffices = async () => {
-        setLoading(true);
-        try {
-            const data = await officeService.getAllOffices();
-            setOffices(data);
-        } catch (error) {
-            console.error("Error fetching offices:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleDelete = async (id, name) => {
+    if (window.confirm(`Are you sure you want to remove ${name || 'this office'}?`)) {
+      try {
+        await officeService.deleteOffice(id);
+        fetchOffices();
+      } catch (err) {
+        console.error('Error deleting office:', err);
+        setError('Failed to delete office.');
+      }
+    }
+  };
 
-    const handleSearch = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            if (searchQuery.trim() === '') {
-                fetchOffices();
-            } else {
-                const data = await officeService.searchOffices(searchQuery);
-                setOffices(data);
-            }
-        } catch (error) {
-            console.error("Error searching offices:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  return (
+    <div className="gc-office-list-wrapper">
+      {/* Search & Action Bar */}
+      <div className="gc-office-search-bar">
+        <form onSubmit={handleSearch} className="gc-search-form">
+          <div className="gc-search-input-wrapper">
+            <span className="gc-search-icon">🔍</span>
+            <input
+              type="text"
+              className="gc-input-field gc-search-input"
+              placeholder="Search offices by name or city..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <button type="submit" className="gc-btn-primary" style={{ padding: '10px 20px' }}>
+            Search
+          </button>
+          <button
+            type="button"
+            className="gc-btn-secondary"
+            onClick={() => { setSearchQuery(''); fetchOffices(); }}
+          >
+            Reset
+          </button>
+        </form>
+      </div>
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this office?")) {
-            try {
-                await officeService.deleteOffice(id);
-                fetchOffices();
-            } catch (error) {
-                console.error("Error deleting office:", error);
-            }
-        }
-    };
+      {error && (
+        <div className="gc-form-error-banner" style={{ marginBottom: '16px' }}>
+          <span>⚠️ {error}</span>
+          <button type="button" className="gc-btn-secondary" onClick={fetchOffices}>Retry</button>
+        </div>
+      )}
 
-    return (
-        <Box>
-            <Box component="form" onSubmit={handleSearch} sx={{ mb: 3, display: 'flex', gap: 2 }}>
-                <TextField
-                    fullWidth
-                    variant="outlined"
-                    placeholder="Search offices by name..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <SearchIcon />
-                            </InputAdornment>
-                        ),
-                    }}
-                />
-                <Button variant="contained" type="submit" color="primary">
-                    Search
-                </Button>
-                <Button variant="outlined" onClick={fetchOffices}>
-                    Reset
-                </Button>
-            </Box>
-
-            {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                    <CircularProgress />
-                </Box>
-            ) : (
-                <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e0e0e0' }}>
-                    <Table sx={{ minWidth: 650 }} aria-label="office table">
-                        <TableHead sx={{ bgcolor: '#f5f5f5' }}>
-                            <TableRow>
-                                <TableCell><strong>Name</strong></TableCell>
-                                <TableCell><strong>Address</strong></TableCell>
-                                <TableCell><strong>Phone Number</strong></TableCell>
-                                <TableCell><strong>Working Hours</strong></TableCell>
-                                <TableCell align="center"><strong>Actions</strong></TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {offices.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={5} align="center">
-                                        <Typography variant="body1" sx={{ py: 2, color: 'text.secondary' }}>
-                                            No offices found.
-                                        </Typography>
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                offices.map((office) => (
-                                    <TableRow key={office.id} hover>
-                                        <TableCell>{office.officeName}</TableCell>
-                                        <TableCell>{office.address}</TableCell>
-                                        <TableCell>{office.phoneNumber}</TableCell>
-                                        <TableCell>{office.workingHours}</TableCell>
-                                        <TableCell align="center">
-                                            <IconButton color="primary" onClick={() => onEdit(office)}>
-                                                <EditIcon />
-                                            </IconButton>
-                                            <IconButton color="error" onClick={() => handleDelete(office.id)}>
-                                                <DeleteIcon />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-        </Box>
-    );
+      {loading ? (
+        <div className="gc-history-loading">
+          <div className="gc-spinner" />
+          <span>Loading collection hubs…</span>
+        </div>
+      ) : offices.length === 0 ? (
+        <div className="gc-glass-card gc-empty-history" style={{ margin: '20px 0' }}>
+          <div className="gc-empty-icon">🏢</div>
+          <h3>No Offices Found</h3>
+          <p>No registered collection centers match your query. Try resetting your search.</p>
+        </div>
+      ) : (
+        <div className="gc-table-container">
+          <table className="gc-table gc-table-responsive">
+            <thead>
+              <tr>
+                <th>Office Name</th>
+                <th>Address & Region</th>
+                <th>Contact</th>
+                <th>Working Hours</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {offices.map((office) => (
+                <tr key={office.id || office.officeId}>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '1.2rem' }}>♻️</span>
+                      <div>
+                        <strong style={{ color: '#ffffff', display: 'block' }}>
+                          {office.officeName || office.name}
+                        </strong>
+                        <span style={{ fontSize: '0.74rem', color: '#00d4ff' }}>
+                          {office.type || 'E-Waste Recycler'}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ color: 'var(--gc-text-secondary)', fontSize: '0.86rem' }}>
+                        {office.address}
+                      </span>
+                      <span style={{ color: 'var(--gc-text-muted)', fontSize: '0.74rem' }}>
+                        {office.city} {office.state ? `• ${office.state}` : ''} {office.pincode ? `(${office.pincode})` : ''}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span style={{ color: 'var(--gc-text-secondary)', fontSize: '0.86rem' }}>
+                      📞 {office.phoneNumber || 'N/A'}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="gc-chip gc-chip-collected" style={{ textTransform: 'none' }}>
+                      🕒 {office.workingHours || '9 AM - 6 PM'}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    <div style={{ display: 'inline-flex', gap: '8px' }}>
+                      <button
+                        type="button"
+                        className="gc-btn-secondary"
+                        style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                        onClick={() => onEdit(office)}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="gc-btn-secondary gc-btn-danger"
+                        style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                        onClick={() => handleDelete(office.id || office.officeId, office.officeName)}
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default OfficeList;

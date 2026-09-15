@@ -1,0 +1,36 @@
+/* ============================================================
+   OfficeList Styles — Liquid Glass Office Management Directory
+   ============================================================ */
+
+.gc-office-list-wrapper {
+  width: 100%;
+}
+
+.gc-office-search-bar {
+  margin-bottom: 20px;
+}
+
+.gc-search-form {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  max-width: 650px;
+}
+
+.gc-search-input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.gc-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+
+.gc-search-input {
+  padding-left: 40px !important;
+}
