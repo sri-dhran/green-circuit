@@ -60,7 +60,7 @@ public class PickupRequest {
     private LocalDate pickupDate;
     private LocalTime pickupTime;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = RequestStatusConverter.class)
     @Column(nullable = false)
     private RequestStatus status = RequestStatus.PENDING;
 
