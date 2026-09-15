@@ -29,6 +29,8 @@ services:
       - SPRING_MAIL_PORT=2525
       - SPRING_MAIL_USERNAME=dummy
       - SPRING_MAIL_PASSWORD=dummy
+      - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=25MB
+      - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=25MB
     depends_on:
       db:
         condition: service_healthy

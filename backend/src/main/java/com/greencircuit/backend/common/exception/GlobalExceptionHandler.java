@@ -37,6 +37,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, String>> handleMaxSizeException(org.springframework.web.multipart.MaxUploadSizeExceededException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Image file exceeds the maximum allowed size (25MB).");
+        error.put("message", "Image file exceeds the maximum allowed size (25MB). Please choose a smaller photo.");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
         Map<String, String> error = new HashMap<>();
