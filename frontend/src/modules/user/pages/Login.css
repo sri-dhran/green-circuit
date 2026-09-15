@@ -1,0 +1,741 @@
+/* ============================================================
+   GREEN CIRCUIT — Premium Liquid Glass Login Page Styles
+   Apple/iOS-inspired Glassmorphism Design
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ── Page Root ─────────────────────────────────────────────── */
+.gc-login-root {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #020d08;
+}
+
+/* ── Animated Gradient Background ─────────────────────────── */
+.gc-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(ellipse at 20% 50%, #0a2e1a 0%, #020d08 60%),
+              radial-gradient(ellipse at 80% 20%, #061a2e 0%, transparent 60%);
+}
+
+/* ── Gradient Blobs ────────────────────────────────────────── */
+.gc-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  animation: blobFloat 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+.gc-blob-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #00c96720, #00ff6610);
+  top: -150px;
+  left: -150px;
+  animation-duration: 25s;
+  animation-delay: 0s;
+}
+
+.gc-blob-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #0066ff18, #00c9b120);
+  bottom: -100px;
+  right: -100px;
+  animation-duration: 30s;
+  animation-delay: -8s;
+}
+
+.gc-blob-3 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, #00ff9915, #22ff7710);
+  top: 40%;
+  left: 60%;
+  animation-duration: 22s;
+  animation-delay: -5s;
+}
+
+.gc-blob-4 {
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, #00d4ff12, #00ff8810);
+  top: 20%;
+  right: 25%;
+  animation-duration: 18s;
+  animation-delay: -12s;
+}
+
+@keyframes blobFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%       { transform: translate(30px, -40px) scale(1.05); }
+  50%       { transform: translate(-20px, 20px) scale(0.95); }
+  75%       { transform: translate(40px, 30px) scale(1.02); }
+}
+
+/* ── Canvas for floating particles ────────────────────────── */
+.gc-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ── Floating glass spheres ────────────────────────────────── */
+.gc-spheres {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.gc-sphere {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%,
+    rgba(255,255,255,0.18),
+    rgba(0,200,100,0.06) 50%,
+    rgba(0,150,80,0.03));
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    0 4px 20px rgba(0,200,100,0.08);
+  animation: sphereFloat linear infinite;
+  will-change: transform, opacity;
+}
+
+.gc-sphere:nth-child(1) { width: 80px; height: 80px; left: 8%;  top: 15%; animation-duration: 18s; animation-delay: 0s; }
+.gc-sphere:nth-child(2) { width: 50px; height: 50px; left: 82%; top: 25%; animation-duration: 24s; animation-delay: -6s; }
+.gc-sphere:nth-child(3) { width: 35px; height: 35px; left: 15%; top: 70%; animation-duration: 20s; animation-delay: -10s; }
+.gc-sphere:nth-child(4) { width: 65px; height: 65px; left: 75%; top: 65%; animation-duration: 28s; animation-delay: -3s; }
+.gc-sphere:nth-child(5) { width: 28px; height: 28px; left: 50%; top: 10%; animation-duration: 16s; animation-delay: -7s; }
+.gc-sphere:nth-child(6) { width: 45px; height: 45px; left: 35%; top: 85%; animation-duration: 22s; animation-delay: -14s; }
+
+@keyframes sphereFloat {
+  0%   { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
+  50%  { transform: translateY(-40px) rotate(180deg); opacity: 0.9; }
+  100% { transform: translateY(0px) rotate(360deg); opacity: 0.6; }
+}
+
+/* ── Floating eco icons ────────────────────────────────────── */
+.gc-eco-icons {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.gc-eco-icon {
+  position: absolute;
+  opacity: 0.08;
+  font-size: 2rem;
+  animation: ecoFloat linear infinite;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 0 8px rgba(0, 255, 100, 0.3));
+  color: #00ff88;
+}
+
+.gc-eco-icon:nth-child(1) { left: 5%;  top: 20%; font-size: 2.5rem; animation-duration: 20s; animation-delay: 0s; }
+.gc-eco-icon:nth-child(2) { left: 90%; top: 15%; font-size: 1.8rem; animation-duration: 25s; animation-delay: -5s; }
+.gc-eco-icon:nth-child(3) { left: 12%; top: 75%; font-size: 2rem;   animation-duration: 18s; animation-delay: -9s; }
+.gc-eco-icon:nth-child(4) { left: 80%; top: 70%; font-size: 2.2rem; animation-duration: 22s; animation-delay: -3s; }
+.gc-eco-icon:nth-child(5) { left: 50%; top: 8%;  font-size: 1.5rem; animation-duration: 28s; animation-delay: -15s; }
+.gc-eco-icon:nth-child(6) { left: 65%; top: 88%; font-size: 1.6rem; animation-duration: 16s; animation-delay: -7s; }
+
+@keyframes ecoFloat {
+  0%   { transform: translateY(0px) rotate(0deg) scale(1); opacity: 0.06; }
+  33%  { opacity: 0.12; }
+  50%  { transform: translateY(-30px) rotate(15deg) scale(1.1); opacity: 0.10; }
+  100% { transform: translateY(0px) rotate(0deg) scale(1); opacity: 0.06; }
+}
+
+/* ── Main content wrapper ──────────────────────────────────── */
+.gc-login-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 460px;
+  padding: 20px;
+  animation: contentEnter 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes contentEnter {
+  from { opacity: 0; transform: translateY(40px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Glass Card ────────────────────────────────────────────── */
+.gc-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  padding: 44px 40px 36px;
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 120, 0.06),
+    0 20px 60px rgba(0, 0, 0, 0.45),
+    0 8px 24px rgba(0, 200, 100, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  animation: cardFloat 6s ease-in-out infinite;
+}
+
+/* Inner glass highlight */
+.gc-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3) 30%,
+    rgba(0, 255, 120, 0.2) 60%,
+    transparent);
+  border-radius: 28px 28px 0 0;
+}
+
+/* Subtle inner glow reflection */
+.gc-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at 40% 20%,
+    rgba(255, 255, 255, 0.04) 0%,
+    transparent 60%);
+  pointer-events: none;
+}
+
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+/* ── Logo area ─────────────────────────────────────────────── */
+.gc-logo-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+  animation: logoEnter 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+}
+
+@keyframes logoEnter {
+  from { opacity: 0; transform: scale(0.7) translateY(-10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.gc-logo-icon {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #00c96750, #00ff6630);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 255, 120, 0.25);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  box-shadow:
+    0 0 30px rgba(0, 200, 100, 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  animation: logoGlow 3s ease-in-out infinite;
+  font-size: 2rem;
+}
+
+@keyframes logoGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(0, 200, 100, 0.2), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2); }
+  50%       { box-shadow: 0 0 40px rgba(0, 255, 120, 0.35), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2); }
+}
+
+.gc-brand-name {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #00e676, #00bcd4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+}
+
+.gc-welcome-heading {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.gc-welcome-sub {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+  max-width: 300px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* ── Error Toast ───────────────────────────────────────────── */
+.gc-error-toast {
+  background: rgba(255, 60, 60, 0.12);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 80, 80, 0.25);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 140, 140, 0.95);
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 0 20px rgba(255, 60, 60, 0.1);
+  animation: toastSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateY(-10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.gc-error-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* ── Form ──────────────────────────────────────────────────── */
+.gc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Input Group ───────────────────────────────────────────── */
+.gc-input-group {
+  position: relative;
+}
+
+.gc-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.gc-input-icon {
+  position: absolute;
+  left: 16px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1.05rem;
+  transition: color 0.25s ease;
+  z-index: 2;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.gc-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 16px 48px 16px 48px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  outline: none;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.gc-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.gc-input:-webkit-autofill,
+.gc-input:-webkit-autofill:hover,
+.gc-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px rgba(10, 40, 20, 0.8) inset !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.95) !important;
+  caret-color: #00e676;
+}
+
+.gc-input:focus {
+  border-color: rgba(0, 230, 118, 0.5);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 0 0 3px rgba(0, 200, 100, 0.12),
+    0 0 20px rgba(0, 200, 100, 0.08);
+}
+
+.gc-input:focus + .gc-input-icon,
+.gc-input-group:focus-within .gc-input-icon {
+  color: rgba(0, 230, 118, 0.8);
+}
+
+/* Floating label */
+.gc-label {
+  position: absolute;
+  left: 48px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.9rem;
+  font-weight: 400;
+  pointer-events: none;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left top;
+  z-index: 2;
+  background: transparent;
+  padding: 0 4px;
+}
+
+.gc-input:focus ~ .gc-label,
+.gc-input:not(:placeholder-shown) ~ .gc-label {
+  top: -1px;
+  transform: translateY(-50%) scale(0.78);
+  color: rgba(0, 230, 118, 0.85);
+  left: 44px;
+  background: transparent;
+}
+
+/* Eye toggle button */
+.gc-eye-btn {
+  position: absolute;
+  right: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 8px;
+  transition: color 0.2s ease, background 0.2s ease;
+  z-index: 3;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.gc-eye-btn:hover {
+  color: rgba(0, 230, 118, 0.8);
+  background: rgba(0, 230, 118, 0.08);
+}
+
+.gc-eye-btn:focus-visible {
+  outline: 2px solid rgba(0, 230, 118, 0.5);
+  outline-offset: 2px;
+}
+
+.gc-eye-btn svg {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+}
+
+.gc-eye-btn.visible svg {
+  transform: scale(1.1);
+}
+
+/* ── Remember / Forgot row ─────────────────────────────────── */
+.gc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.gc-remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.82rem;
+  font-weight: 400;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.gc-remember:hover { color: rgba(255, 255, 255, 0.8); }
+
+.gc-checkbox {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.gc-checkbox:checked {
+  background: rgba(0, 200, 100, 0.3);
+  border-color: rgba(0, 230, 118, 0.6);
+}
+
+.gc-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00e676;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.gc-checkbox:focus-visible {
+  outline: 2px solid rgba(0, 230, 118, 0.5);
+  outline-offset: 2px;
+}
+
+.gc-forgot {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(0, 200, 100, 0.75);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  cursor: default;
+}
+
+.gc-forgot:hover { color: rgba(0, 230, 118, 1); }
+
+/* ── Login Button ──────────────────────────────────────────── */
+.gc-btn-login {
+  width: 100%;
+  padding: 16px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #00c967 0%, #00e676 50%, #00bcd4 100%);
+  color: #011a0f;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease,
+              filter 0.2s ease;
+  box-shadow:
+    0 4px 20px rgba(0, 200, 100, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.2) inset;
+}
+
+/* Shimmer highlight */
+.gc-btn-login::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.gc-btn-login:hover::before { left: 100%; }
+
+.gc-btn-login:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow:
+    0 8px 30px rgba(0, 200, 100, 0.45),
+    0 1px 0 rgba(255, 255, 255, 0.25) inset;
+  filter: brightness(1.05);
+}
+
+.gc-btn-login:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 10px rgba(0, 200, 100, 0.25);
+  transition-duration: 0.08s;
+}
+
+.gc-btn-login:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.gc-btn-login:focus-visible {
+  outline: 2px solid rgba(0, 230, 118, 0.7);
+  outline-offset: 3px;
+}
+
+/* Button inner content */
+.gc-btn-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Loading spinner */
+.gc-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(1, 26, 15, 0.3);
+  border-top-color: #011a0f;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Success checkmark */
+.gc-success-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes checkPop {
+  from { transform: scale(0) rotate(-30deg); }
+  to   { transform: scale(1) rotate(0deg); }
+}
+
+/* ── Success overlay ───────────────────────────────────────── */
+.gc-success-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0);
+  animation: overlayFadeIn 0.3s ease forwards;
+}
+
+@keyframes overlayFadeIn {
+  to { background: rgba(1, 20, 10, 0.7); }
+}
+
+.gc-success-badge {
+  width: 90px;
+  height: 90px;
+  background: linear-gradient(135deg, #00c967, #00e676);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  box-shadow: 0 0 60px rgba(0, 230, 118, 0.6);
+  animation: badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+}
+
+@keyframes badgePop {
+  from { transform: scale(0) rotate(-20deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg);  opacity: 1; }
+}
+
+/* ── Divider ───────────────────────────────────────────────── */
+.gc-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0;
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.75rem;
+}
+
+.gc-divider::before,
+.gc-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Footer ────────────────────────────────────────────────── */
+.gc-footer {
+  text-align: center;
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+}
+
+.gc-footer a {
+  color: rgba(0, 200, 100, 0.8);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.gc-footer a:hover { color: #00e676; }
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 520px) {
+  .gc-login-content {
+    padding: 12px;
+    max-width: 100%;
+  }
+
+  .gc-card {
+    padding: 32px 24px 28px;
+    border-radius: 22px;
+  }
+
+  .gc-welcome-heading { font-size: 1.5rem; }
+  .gc-logo-icon { width: 60px; height: 60px; font-size: 1.7rem; }
+
+  /* Reduce background effects on mobile */
+  .gc-sphere { display: none; }
+  .gc-eco-icon { opacity: 0.05; }
+}
+
+/* ── Reduced Motion ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .gc-blob,
+  .gc-sphere,
+  .gc-eco-icon,
+  .gc-card,
+  .gc-logo-icon {
+    animation: none !important;
+  }
+
+  .gc-btn-login,
+  .gc-input,
+  .gc-eye-btn {
+    transition: none !important;
+  }
+
+  .gc-card {
+    transform: none !important;
+  }
+}
