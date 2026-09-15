@@ -1,163 +1,225 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Container, Typography, AppBar, Toolbar, Button, Grid, Card, CardMedia, CardContent, CardActions, Chip, CircularProgress, Alert, Snackbar, Tabs, Tab, List, ListItem, ListItemText, Paper } from '@mui/material';
 import { rewardService } from '../api/rewardService';
 import { AuthContext } from '../../user/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import GlassBackground from '../../../common/components/GlassBackground';
+import GlassNavbar from '../../../common/components/GlassNavbar';
+import './RewardStore.css';
 
 const RewardStore = () => {
-    const { user, refreshUser } = useContext(AuthContext);
-    const navigate = useNavigate();
-    
-    const [rewards, setRewards] = useState([]);
-    const [redemptions, setRedemptions] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [successMsg, setSuccessMsg] = useState('');
-    const [tabIndex, setTabIndex] = useState(0);
+  const { user, refreshUser } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+  const [rewards, setRewards] = useState([]);
+  const [redemptions, setRedemptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [tabIndex, setTabIndex] = useState(0); // 0: Store, 1: Redemptions
+  const [redeemingId, setRedeemingId] = useState(null);
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const [rewardsData, redemptionsData] = await Promise.all([
-                rewardService.getAvailableRewards(),
-                rewardService.getMyRedemptions()
-            ]);
-            setRewards(rewardsData);
-            setRedemptions(redemptionsData);
-            if (refreshUser) refreshUser(); // refresh points
-        } catch {
-            setError('Failed to load store data');
-        } finally {
-            setLoading(false);
-        }
-    };
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-    const handleRedeem = async (itemId) => {
-        try {
-            await rewardService.redeemReward(itemId);
-            setSuccessMsg('Reward redeemed successfully!');
-            fetchData();
-        } catch (err) {
-            setError(err.response?.data?.message || 'Failed to redeem reward. Not enough points?');
-        }
-    };
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [rewardsData, redemptionsData] = await Promise.all([
+        rewardService.getAvailableRewards(),
+        rewardService.getMyRedemptions()
+      ]);
+      setRewards(Array.isArray(rewardsData) ? rewardsData : []);
+      setRedemptions(Array.isArray(redemptionsData) ? redemptionsData : []);
+      if (refreshUser) refreshUser();
+    } catch {
+      setError('Failed to load rewards store data.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleBack = () => {
-        navigate('/user-dashboard');
-    };
+  const handleRedeem = async (itemId) => {
+    setRedeemingId(itemId);
+    try {
+      await rewardService.redeemReward(itemId);
+      setSuccessMsg('🎉 Reward redeemed successfully! Voucher details sent to your registered email.');
+      fetchData();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to redeem reward. Please check your points balance.');
+    } finally {
+      setRedeemingId(null);
+    }
+  };
 
-    if (!user) return null;
+  if (!user) return null;
 
-    return (
-        <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: '#f5f5f5' }}>
-            <AppBar position="static" sx={{ background: 'linear-gradient(45deg, #ff9800 30%, #ffc107 90%)' }}>
-                <Toolbar>
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'white' }}>
-                        Green Circuit - Rewards Store
-                    </Typography>
-                    <Chip 
-                        icon={<EmojiEventsIcon />} 
-                        label={`${user.rewardPoints} Points`} 
-                        color="secondary" 
-                        sx={{ mr: 3, fontWeight: 'bold' }} 
-                    />
-                    <Button color="inherit" onClick={handleBack} sx={{ color: 'white', mr: 2 }}>Back to Dashboard</Button>
-                </Toolbar>
-            </AppBar>
+  return (
+    <div className="gc-reward-root">
+      <GlassBackground />
+      <GlassNavbar />
 
-            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                <Paper sx={{ mb: 3 }}>
-                    <Tabs value={tabIndex} onChange={(e, val) => setTabIndex(val)} centered>
-                        <Tab label="Available Rewards" />
-                        <Tab label="My Redemptions" />
-                    </Tabs>
-                </Paper>
+      <main className="gc-reward-container">
+        {/* Banner Section with User Points */}
+        <section className="gc-glass-card gc-reward-hero-card">
+          <div className="gc-hero-left">
+            <span className="gc-badge-portal">Green Circuit Store</span>
+            <h1 className="gc-reward-heading">Eco Rewards Marketplace</h1>
+            <p className="gc-reward-subheading">
+              Turn your recycled electronic waste into certified shopping discounts, eco-gadgets, and gift vouchers.
+            </p>
+          </div>
 
-                {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
-                
-                <Snackbar open={!!successMsg} autoHideDuration={6000} onClose={() => setSuccessMsg('')} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-                    <Alert onClose={() => setSuccessMsg('')} severity="success" sx={{ width: '100%' }}>
-                        {successMsg}
-                    </Alert>
-                </Snackbar>
+          <div className="gc-hero-points-box">
+            <div className="gc-hero-trophy">🏆</div>
+            <div className="gc-hero-points-data">
+              <span className="gc-hero-points-num">{user.rewardPoints ?? 0}</span>
+              <span className="gc-hero-points-label">Available Reward Points</span>
+            </div>
+          </div>
+        </section>
 
-                {loading ? (
-                    <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>
+        {/* Feedback alerts */}
+        {error && (
+          <div className="gc-form-error-banner" style={{ margin: '20px 0' }}>
+            <span>⚠️ {error}</span>
+            <button type="button" className="gc-banner-close" onClick={() => setError('')}>✕</button>
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="gc-reward-success-banner">
+            <span>{successMsg}</span>
+            <button type="button" className="gc-banner-close" onClick={() => setSuccessMsg('')}>✕</button>
+          </div>
+        )}
+
+        {/* Store Tabs */}
+        <div className="gc-reward-tabs-bar">
+          <div className="gc-tabs-header">
+            <button
+              className={`gc-tab-button ${tabIndex === 0 ? 'active' : ''}`}
+              onClick={() => setTabIndex(0)}
+            >
+              🎁 Available Rewards ({rewards.length})
+            </button>
+            <button
+              className={`gc-tab-button ${tabIndex === 1 ? 'active' : ''}`}
+              onClick={() => setTabIndex(1)}
+            >
+              📜 My Redemptions ({redemptions.length})
+            </button>
+          </div>
+        </div>
+
+        {/* Loading */}
+        {loading ? (
+          <div className="gc-history-loading">
+            <div className="gc-spinner" />
+            <span>Loading reward items…</span>
+          </div>
+        ) : (
+          <>
+            {/* Tab 0: Available Rewards Grid */}
+            {tabIndex === 0 && (
+              <div className="gc-rewards-grid">
+                {rewards.length === 0 ? (
+                  <div className="gc-glass-card gc-empty-history" style={{ gridColumn: '1 / -1' }}>
+                    <div className="gc-empty-icon">🎁</div>
+                    <h3>No Rewards Currently Available</h3>
+                    <p>New vouchers and eco-products are added every week. Check back soon!</p>
+                  </div>
                 ) : (
-                    <>
-                        {tabIndex === 0 && (
-                            <Grid container spacing={3}>
-                                {rewards.map(reward => (
-                                    <Grid item xs={12} sm={6} md={4} key={reward.id}>
-                                        <Card elevation={3} sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                            <CardMedia
-                                                component="img"
-                                                height="180"
-                                                image={reward.imageUrl}
-                                                alt={reward.name}
-                                                crossOrigin="anonymous"
-                                            />
-                                            <CardContent sx={{ flexGrow: 1 }}>
-                                                <Typography gutterBottom variant="h6" component="div" color="primary">
-                                                    {reward.name}
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary" paragraph>
-                                                    {reward.description}
-                                                </Typography>
-                                                <Chip 
-                                                    icon={<EmojiEventsIcon />} 
-                                                    label={`${reward.pointsCost} Points`} 
-                                                    color={user.rewardPoints >= reward.pointsCost ? "success" : "default"}
-                                                    size="small"
-                                                />
-                                            </CardContent>
-                                            <CardActions sx={{ p: 2, pt: 0 }}>
-                                                <Button 
-                                                    fullWidth 
-                                                    variant="contained" 
-                                                    color="primary" 
-                                                    disabled={user.rewardPoints < reward.pointsCost}
-                                                    onClick={() => handleRedeem(reward.id)}
-                                                >
-                                                    {user.rewardPoints >= reward.pointsCost ? 'Redeem Now' : 'Not Enough Points'}
-                                                </Button>
-                                            </CardActions>
-                                        </Card>
-                                    </Grid>
-                                ))}
-                            </Grid>
+                  rewards.map((reward) => {
+                    const canAfford = (user.rewardPoints ?? 0) >= reward.pointsCost;
+                    const isRedeeming = redeemingId === reward.id;
+
+                    return (
+                      <div key={reward.id} className="gc-glass-card gc-glass-card-hover gc-reward-card">
+                        {reward.imageUrl && (
+                          <div className="gc-reward-img-wrapper">
+                            <img
+                              src={reward.imageUrl}
+                              alt={reward.name}
+                              className="gc-reward-img"
+                              crossOrigin="anonymous"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                          </div>
                         )}
 
-                        {tabIndex === 1 && (
-                            <Paper elevation={2} sx={{ p: 2 }}>
-                                {redemptions.length === 0 ? (
-                                    <Alert severity="info">You haven't redeemed any rewards yet.</Alert>
-                                ) : (
-                                    <List>
-                                        {redemptions.map(r => (
-                                            <ListItem key={r.id} divider>
-                                                <ListItemText 
-                                                    primary={<Typography variant="h6">{r.rewardItem.name}</Typography>}
-                                                    secondary={`Redeemed on: ${new Date(r.redeemedAt).toLocaleString()}`} 
-                                                />
-                                                <Chip label={`Cost: ${r.rewardItem.pointsCost} Points`} size="small" />
-                                            </ListItem>
-                                        ))}
-                                    </List>
-                                )}
-                            </Paper>
-                        )}
-                    </>
+                        <div className="gc-reward-content">
+                          <div className="gc-reward-cost-pill">
+                            <span>🪙 {reward.pointsCost} Points</span>
+                          </div>
+                          <h3 className="gc-reward-title">{reward.name}</h3>
+                          <p className="gc-reward-desc">{reward.description}</p>
+                        </div>
+
+                        <div className="gc-reward-footer">
+                          <button
+                            type="button"
+                            className={canAfford ? 'gc-btn-primary' : 'gc-btn-secondary'}
+                            style={{ width: '100%' }}
+                            disabled={!canAfford || isRedeeming}
+                            onClick={() => handleRedeem(reward.id)}
+                          >
+                            {isRedeeming ? (
+                              'Processing…'
+                            ) : canAfford ? (
+                              'Redeem Voucher'
+                            ) : (
+                              `Needs ${reward.pointsCost - (user.rewardPoints ?? 0)} more pts`
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
-            </Container>
-        </Box>
-    );
+              </div>
+            )}
+
+            {/* Tab 1: My Redemptions History */}
+            {tabIndex === 1 && (
+              <div className="gc-glass-card gc-redemptions-card">
+                <h3 className="gc-redemptions-title">Your Claimed Rewards</h3>
+                <p className="gc-redemptions-sub">
+                  History of all vouchers, digital coupons, and items claimed with your points.
+                </p>
+
+                {redemptions.length === 0 ? (
+                  <div className="gc-empty-history" style={{ padding: '32px 0' }}>
+                    <div className="gc-empty-icon">🏷️</div>
+                    <p>You have not claimed any rewards yet. Collect more points by submitting e-waste!</p>
+                  </div>
+                ) : (
+                  <div className="gc-redemptions-list">
+                    {redemptions.map((r) => (
+                      <div key={r.id} className="gc-redemption-item">
+                        <div className="gc-redemption-item-left">
+                          <div className="gc-redemption-icon">🎁</div>
+                          <div>
+                            <h4 className="gc-redemption-name">{r.rewardItem?.name || 'Redeemed Reward'}</h4>
+                            <span className="gc-redemption-date">
+                              Claimed on {new Date(r.redeemedAt).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="gc-redemption-cost">
+                          <span>-{r.rewardItem?.pointsCost} Pts</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </main>
+    </div>
+  );
 };
 
 export default RewardStore;

@@ -1,179 +1,239 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../user/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { notificationService } from '../../notification/api/notificationService';
-import { Box, Container, Typography, AppBar, Toolbar, Button, Paper, Grid, Chip, Tabs, Tab, Badge, IconButton, Popover, List, ListItem, ListItemText } from '@mui/material';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import { pickupRequestService } from '../api/pickupRequestService';
+import GlassBackground from '../../../common/components/GlassBackground';
+import GlassNavbar from '../../../common/components/GlassNavbar';
 import PickupRequestForm from '../components/PickupRequestForm';
 import PickupRequestHistory from '../components/PickupRequestHistory';
+import './UserDashboard.css';
 
 const UserDashboard = () => {
-    const { user, logout, refreshUser } = useContext(AuthContext);
-    const navigate = useNavigate();
+  const { user, refreshUser } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-    const [tabIndex, setTabIndex] = useState(0);
-    const [notifications, setNotifications] = useState([]);
-    const [notificationAnchor, setNotificationAnchor] = useState(null);
+  const [activeTab, setActiveTab] = useState(0); // 0: Submit, 1: History
+  const [stats, setStats] = useState({
+    totalRequests: 0,
+    pending: 0,
+    completed: 0,
+  });
 
-    useEffect(() => {
-        if (!user) return;
-        fetchNotifications();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user, navigate]);
+  useEffect(() => {
+    if (!user) return;
+    fetchUserStats();
+  }, [user, activeTab]);
 
-    const fetchNotifications = async () => {
-        try {
-            const data = await notificationService.getMyNotifications();
-            setNotifications(data);
-            if (refreshUser) refreshUser();
-        } catch (err) {
-            console.error(err);
-        }
-    };
+  const fetchUserStats = async () => {
+    try {
+      const requests = await pickupRequestService.getMyRequests();
+      if (Array.isArray(requests)) {
+        const total = requests.length;
+        const pending = requests.filter(
+          (r) => r.status === 'PENDING' || r.status === 'ACCEPTED' || r.status === 'PICKUP_SCHEDULED'
+        ).length;
+        const completed = requests.filter(
+          (r) => r.status === 'COLLECTED' || r.status === 'RECYCLED'
+        ).length;
+        setStats({ totalRequests: total, pending, completed });
+      }
+      if (refreshUser) refreshUser();
+    } catch (err) {
+      console.warn('Could not load user stats:', err);
+    }
+  };
 
-    const handleNotificationClick = (event) => {
-        setNotificationAnchor(event.currentTarget);
-    };
+  const handlePickupSuccess = () => {
+    setActiveTab(1); // switch to history tab on submission
+    fetchUserStats();
+  };
 
-    const handleNotificationClose = () => {
-        setNotificationAnchor(null);
-    };
+  if (!user) return null;
 
-    const handleMarkAsRead = async (id) => {
-        try {
-            await notificationService.markAsRead(id);
-            fetchNotifications();
-        } catch (err) {
-            console.error(err);
-        }
-    };
+  return (
+    <div className="gc-dashboard-root">
+      <GlassBackground />
+      <GlassNavbar />
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
+      <main className="gc-dashboard-container">
+        {/* Welcome & Overview Header */}
+        <section className="gc-dash-header-section">
+          <div className="gc-dash-header-left">
+            <span className="gc-badge-portal">User Portal</span>
+            <h1 className="gc-dash-heading">
+              Welcome back, <span className="gc-dash-name">{user.name}</span>
+            </h1>
+            <p className="gc-dash-subheading">
+              Track your electronic waste impact, schedule certified disposals, and claim green rewards.
+            </p>
+          </div>
 
-    const handlePickupSuccess = () => {
-        setTabIndex(1); // Switch to history tab on success
-    };
-
-    if (!user) return null;
-
-    return (
-        <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: '#f5f5f5' }}>
-            <AppBar position="static" sx={{ background: 'linear-gradient(45deg, #4caf50 30%, #81c784 90%)' }}>
-                <Toolbar>
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        Green Circuit - User Dashboard
-                    </Typography>
-                    <Chip 
-                        icon={<EmojiEventsIcon />} 
-                        label={`${user.rewardPoints} Points`} 
-                        color="secondary" 
-                        sx={{ mr: 3, fontWeight: 'bold' }} 
-                    />
-                    <Typography variant="subtitle1" sx={{ mr: 2 }}>
-                        {user.name}
-                    </Typography>
-                    
-                    <Button color="inherit" onClick={() => navigate('/reward-store')} sx={{ mr: 2, border: '1px solid white' }}>
-                        Reward Store
-                    </Button>
-                    
-                    <IconButton color="inherit" onClick={handleNotificationClick} sx={{ mr: 2 }}>
-                        <Badge badgeContent={notifications.filter(n => !n.read).length} color="error">
-                            <NotificationsIcon />
-                        </Badge>
-                    </IconButton>
-                    
-                    <Button color="inherit" onClick={handleLogout}>Logout</Button>
-                </Toolbar>
-            </AppBar>
-
-            <Popover
-                open={Boolean(notificationAnchor)}
-                anchorEl={notificationAnchor}
-                onClose={handleNotificationClose}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          <div className="gc-dash-header-action">
+            <button
+              type="button"
+              className="gc-btn-secondary gc-rewards-banner-btn"
+              onClick={() => navigate('/reward-store')}
             >
-                <Box sx={{ width: 320, maxHeight: 400, p: 2 }}>
-                    <Typography variant="h6" gutterBottom>Notifications</Typography>
-                    {notifications.length === 0 ? (
-                        <Typography variant="body2" color="text.secondary">No notifications.</Typography>
-                    ) : (
-                        <List sx={{ p: 0 }}>
-                            {notifications.map((n) => (
-                                <ListItem 
-                                    key={n.id} 
-                                    alignItems="flex-start" 
-                                    sx={{ bgcolor: n.read ? 'transparent' : '#f0f8ff', mb: 1, borderRadius: 1 }}
-                                >
-                                    <ListItemText 
-                                        primary={n.message} 
-                                        secondary={new Date(n.createdAt).toLocaleString()} 
-                                    />
-                                    {!n.read && (
-                                        <Button size="small" onClick={() => handleMarkAsRead(n.id)}>Read</Button>
-                                    )}
-                                </ListItem>
-                            ))}
-                        </List>
-                    )}
-                </Box>
-            </Popover>
+              <span>🏆 Reward Store</span>
+              <span className="gc-rewards-pts-tag">{user.rewardPoints ?? 0} Pts Available</span>
+            </button>
+          </div>
+        </section>
 
-            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                <Paper sx={{ mb: 3 }}>
-                    <Tabs value={tabIndex} onChange={(e, val) => setTabIndex(val)} centered>
-                        <Tab label="New Pickup Request" />
-                        <Tab label="My Pickup Requests" />
-                    </Tabs>
-                </Paper>
+        {/* ── Glass Statistics Metric Cards ── */}
+        <section className="gc-dash-stats-grid">
+          {/* Card 1: Total Requests */}
+          <div className="gc-glass-card gc-glass-card-hover gc-stat-card">
+            <div className="gc-stat-icon-wrapper" style={{ background: 'rgba(0, 201, 103, 0.15)', color: '#00e676' }}>
+              📦
+            </div>
+            <div className="gc-stat-data">
+              <span className="gc-stat-number">{stats.totalRequests}</span>
+              <span className="gc-stat-title">Total Requests</span>
+              <span className="gc-stat-desc">Lifetime submissions</span>
+            </div>
+          </div>
 
-                {tabIndex === 0 && (
-                <Grid container spacing={4}>
-                    <Grid item xs={12} md={4}>
-                        <Paper sx={{ p: 3, elevation: 3, borderRadius: 2, height: '100%' }}>
-                            <Typography variant="h5" gutterBottom color="primary">
-                                Your Profile
-                            </Typography>
-                            <Typography variant="body1"><strong>Name:</strong> {user.name}</Typography>
-                            <Typography variant="body1"><strong>Email:</strong> {user.email}</Typography>
-                            <Box sx={{ mt: 4 }}>
-                                <Typography variant="h6" gutterBottom color="text.secondary">
-                                    How it works
-                                </Typography>
-                                <List dense>
-                                    <ListItem><ListItemText primary="1. Enter device details & photo" /></ListItem>
-                                    <ListItem><ListItemText primary="2. Find nearby e-waste collectors" /></ListItem>
-                                    <ListItem><ListItemText primary="3. Select a collector on the map" /></ListItem>
-                                    <ListItem><ListItemText primary="4. Submit your request" /></ListItem>
-                                </List>
-                            </Box>
-                        </Paper>
-                    </Grid>
+          {/* Card 2: Pending Pickup */}
+          <div className="gc-glass-card gc-glass-card-hover gc-stat-card">
+            <div className="gc-stat-icon-wrapper" style={{ background: 'rgba(255, 179, 0, 0.15)', color: '#ffca28' }}>
+              ⏳
+            </div>
+            <div className="gc-stat-data">
+              <span className="gc-stat-number">{stats.pending}</span>
+              <span className="gc-stat-title">In Progress</span>
+              <span className="gc-stat-desc">Awaiting pickup/collector</span>
+            </div>
+          </div>
 
-                    <Grid item xs={12} md={8}>
-                        <Paper sx={{ p: 3, elevation: 3, borderRadius: 2 }}>
-                            <PickupRequestForm onSuccess={handlePickupSuccess} />
-                        </Paper>
-                    </Grid>
-                </Grid>
-                )}
+          {/* Card 3: Completed Pickups */}
+          <div className="gc-glass-card gc-glass-card-hover gc-stat-card">
+            <div className="gc-stat-icon-wrapper" style={{ background: 'rgba(0, 212, 255, 0.15)', color: '#00d4ff' }}>
+              ✅
+            </div>
+            <div className="gc-stat-data">
+              <span className="gc-stat-number">{stats.completed}</span>
+              <span className="gc-stat-title">Completed & Recycled</span>
+              <span className="gc-stat-desc">Certified eco-disposals</span>
+            </div>
+          </div>
 
-                {tabIndex === 1 && (
-                    <Box sx={{ mt: 2 }}>
-                        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-                            Request History
-                        </Typography>
-                        <PickupRequestHistory />
-                    </Box>
-                )}
-            </Container>
-        </Box>
-    );
+          {/* Card 4: Reward Points */}
+          <div
+            className="gc-glass-card gc-glass-card-hover gc-stat-card gc-stat-reward-card"
+            onClick={() => navigate('/reward-store')}
+          >
+            <div className="gc-stat-icon-wrapper" style={{ background: 'rgba(255, 193, 7, 0.2)', color: '#ffd54f' }}>
+              🌟
+            </div>
+            <div className="gc-stat-data">
+              <span className="gc-stat-number" style={{ color: '#ffd54f' }}>{user.rewardPoints ?? 0}</span>
+              <span className="gc-stat-title">Eco Reward Points</span>
+              <span className="gc-stat-desc">Click to redeem rewards →</span>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Main Navigation Tabs ── */}
+        <div className="gc-dash-tabs-bar">
+          <div className="gc-tabs-header">
+            <button
+              className={`gc-tab-button ${activeTab === 0 ? 'active' : ''}`}
+              onClick={() => setActiveTab(0)}
+            >
+              🌿 New Pickup Request
+            </button>
+            <button
+              className={`gc-tab-button ${activeTab === 1 ? 'active' : ''}`}
+              onClick={() => setActiveTab(1)}
+            >
+              📋 My Requests ({stats.totalRequests})
+            </button>
+          </div>
+        </div>
+
+        {/* ── Tab 0: New Submission ── */}
+        {activeTab === 0 && (
+          <div className="gc-tab-submit-layout">
+            {/* Left Sidebar: Profile & How it works */}
+            <aside className="gc-profile-sidebar">
+              <div className="gc-glass-card gc-profile-card">
+                <div className="gc-profile-avatar-large">
+                  {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+                <h3 className="gc-profile-user-name">{user.name}</h3>
+                <p className="gc-profile-user-email">{user.email}</p>
+                <div className="gc-chip gc-chip-collected" style={{ marginTop: '6px' }}>
+                  Verified Recycler
+                </div>
+
+                <div className="gc-profile-divider" />
+
+                <h4 className="gc-hiw-title">How Recycling Works</h4>
+                <div className="gc-hiw-list">
+                  <div className="gc-hiw-step">
+                    <span className="gc-step-num">1</span>
+                    <div className="gc-step-text">
+                      <strong>Enter Device Info</strong>
+                      <p>Specify device category, condition & attach a photo.</p>
+                    </div>
+                  </div>
+                  <div className="gc-hiw-step">
+                    <span className="gc-step-num">2</span>
+                    <div className="gc-step-text">
+                      <strong>Select Facility</strong>
+                      <p>Pick your nearest certified e-waste office on the map.</p>
+                    </div>
+                  </div>
+                  <div className="gc-hiw-step">
+                    <span className="gc-step-num">3</span>
+                    <div className="gc-step-text">
+                      <strong>Doorstep Pickup</strong>
+                      <p>Agent inspects and securely collects your devices.</p>
+                    </div>
+                  </div>
+                  <div className="gc-hiw-step">
+                    <span className="gc-step-num">4</span>
+                    <div className="gc-step-text">
+                      <strong>Earn Rewards</strong>
+                      <p>Receive green points redeemable in the reward store.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            {/* Right Main Form Container */}
+            <div className="gc-glass-card gc-form-container-card">
+              <PickupRequestForm onSuccess={handlePickupSuccess} />
+            </div>
+          </div>
+        )}
+
+        {/* ── Tab 1: Request History ── */}
+        {activeTab === 1 && (
+          <div className="gc-glass-card gc-history-container-card">
+            <div className="gc-history-header-bar">
+              <div>
+                <h3 className="gc-history-section-title">Submitted Pickup Requests</h3>
+                <p className="gc-history-section-sub">
+                  Live timeline updates from collection to certified recycling.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="gc-btn-primary"
+                onClick={() => setActiveTab(0)}
+              >
+                + New Submission
+              </button>
+            </div>
+            <PickupRequestHistory />
+          </div>
+        )}
+      </main>
+    </div>
+  );
 };
 
 export default UserDashboard;

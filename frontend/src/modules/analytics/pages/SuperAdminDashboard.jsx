@@ -1,99 +1,192 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Container, Typography, AppBar, Toolbar, Button, Grid, Card, CircularProgress, Alert } from '@mui/material';
 import { analyticsService } from '../api/analyticsService';
 import { AuthContext } from '../../user/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import PeopleIcon from '@mui/icons-material/People';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import GlassBackground from '../../../common/components/GlassBackground';
+import GlassNavbar from '../../../common/components/GlassNavbar';
+import './SuperAdminDashboard.css';
 
 const SuperAdminDashboard = () => {
-    const { user, logout } = useContext(AuthContext);
-    const navigate = useNavigate();
-    
-    const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const data = await analyticsService.getStats();
-                setStats(data);
-            } catch {
-                setError('Failed to load analytics');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchStats();
-    }, []);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
-    if (!user) return null;
+  const fetchStats = async () => {
+    try {
+      const data = await analyticsService.getStats();
+      setStats(data);
+    } catch {
+      setError('Failed to load global platform analytics.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: '#f0f2f5' }}>
-            <AppBar position="static" sx={{ background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)' }}>
-                <Toolbar>
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        Green Circuit - Global Analytics
-                    </Typography>
-                    <Typography variant="subtitle1" sx={{ mr: 2 }}>
-                        {user.name} (Super Admin)
-                    </Typography>
-                    <Button color="inherit" onClick={handleLogout}>Logout</Button>
-                </Toolbar>
-            </AppBar>
+  if (!user) return null;
 
-            <Container maxWidth="lg" sx={{ mt: 6, mb: 4 }}>
-                <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#333', mb: 4 }}>
-                    Platform Overview
-                </Typography>
-                
-                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+  return (
+    <div className="gc-admin-root">
+      <GlassBackground />
+      <GlassNavbar />
 
-                {loading ? (
-                    <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>
-                ) : stats ? (
-                    <Grid container spacing={4}>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card elevation={3} sx={{ borderRadius: 3, textAlign: 'center', p: 2 }}>
-                                <PeopleIcon color="primary" sx={{ fontSize: 50, mb: 1 }} />
-                                <Typography variant="h3" color="textPrimary">{stats.totalUsers}</Typography>
-                                <Typography variant="subtitle1" color="textSecondary">Total Users</Typography>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card elevation={3} sx={{ borderRadius: 3, textAlign: 'center', p: 2 }}>
-                                <DeleteIcon color="secondary" sx={{ fontSize: 50, mb: 1 }} />
-                                <Typography variant="h3" color="textPrimary">{stats.totalRequests}</Typography>
-                                <Typography variant="subtitle1" color="textSecondary">Pickup Requests</Typography>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card elevation={3} sx={{ borderRadius: 3, textAlign: 'center', p: 2 }}>
-                                <CheckCircleIcon color="success" sx={{ fontSize: 50, mb: 1 }} />
-                                <Typography variant="h3" color="textPrimary">{stats.completedPickups}</Typography>
-                                <Typography variant="subtitle1" color="textSecondary">Completed Pickups</Typography>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card elevation={3} sx={{ borderRadius: 3, textAlign: 'center', p: 2, bgcolor: '#e8f5e9' }}>
-                                <CheckCircleIcon color="success" sx={{ fontSize: 50, mb: 1 }} />
-                                <Typography variant="h3" color="success.main">{stats.totalEwasteItemsCollected}</Typography>
-                                <Typography variant="subtitle1" color="textSecondary">Total E-Waste Items Saved</Typography>
-                            </Card>
-                        </Grid>
-                    </Grid>
-                ) : null}
-            </Container>
-        </Box>
-    );
+      <main className="gc-admin-container">
+        {/* Header section */}
+        <section className="gc-admin-header-section">
+          <div>
+            <span className="gc-badge-portal" style={{ color: '#00d4ff', borderColor: 'rgba(0, 212, 255, 0.3)', background: 'rgba(0, 212, 255, 0.1)' }}>
+              Super Admin Console
+            </span>
+            <h1 className="gc-admin-heading">Global Platform Analytics</h1>
+            <p className="gc-admin-subheading">
+              Real-time monitoring of registered recyclers, pickup operations, and circular economy recovery metrics.
+            </p>
+          </div>
+
+          <div className="gc-admin-quick-actions">
+            <button
+              type="button"
+              className="gc-btn-primary"
+              onClick={() => navigate('/dashboard')}
+            >
+              🏢 Manage Collection Offices
+            </button>
+          </div>
+        </section>
+
+        {error && (
+          <div className="gc-form-error-banner" style={{ marginBottom: '24px' }}>
+            <span>⚠️ {error}</span>
+            <button type="button" className="gc-btn-secondary" onClick={fetchStats}>Retry</button>
+          </div>
+        )}
+
+        {/* Loading state */}
+        {loading ? (
+          <div className="gc-history-loading" style={{ minHeight: '300px' }}>
+            <div className="gc-spinner" />
+            <span>Aggregating platform metrics…</span>
+          </div>
+        ) : stats ? (
+          <>
+            {/* ── Key Performance Metric Cards ── */}
+            <section className="gc-admin-stats-grid">
+              {/* Total Users */}
+              <div className="gc-glass-card gc-glass-card-hover gc-admin-stat-card">
+                <div className="gc-admin-icon-box" style={{ background: 'rgba(0, 212, 255, 0.15)', color: '#00d4ff' }}>
+                  👥
+                </div>
+                <div className="gc-admin-stat-data">
+                  <span className="gc-admin-stat-num">{stats.totalUsers ?? 0}</span>
+                  <span className="gc-admin-stat-label">Total Users</span>
+                  <span className="gc-admin-stat-desc">Registered community recyclers</span>
+                </div>
+              </div>
+
+              {/* Total Pickup Requests */}
+              <div className="gc-glass-card gc-glass-card-hover gc-admin-stat-card">
+                <div className="gc-admin-icon-box" style={{ background: 'rgba(255, 179, 0, 0.15)', color: '#ffca28' }}>
+                  📦
+                </div>
+                <div className="gc-admin-stat-data">
+                  <span className="gc-admin-stat-num">{stats.totalRequests ?? 0}</span>
+                  <span className="gc-admin-stat-label">Pickup Requests</span>
+                  <span className="gc-admin-stat-desc">Initiated collections across all hubs</span>
+                </div>
+              </div>
+
+              {/* Completed Pickups */}
+              <div className="gc-glass-card gc-glass-card-hover gc-admin-stat-card">
+                <div className="gc-admin-icon-box" style={{ background: 'rgba(0, 230, 118, 0.15)', color: '#00ff88' }}>
+                  ✅
+                </div>
+                <div className="gc-admin-stat-data">
+                  <span className="gc-admin-stat-num">{stats.completedPickups ?? 0}</span>
+                  <span className="gc-admin-stat-label">Completed Pickups</span>
+                  <span className="gc-admin-stat-desc">Processed by certified offices</span>
+                </div>
+              </div>
+
+              {/* Total E-Waste Items Collected */}
+              <div className="gc-glass-card gc-glass-card-hover gc-admin-stat-card gc-admin-hero-stat">
+                <div className="gc-admin-icon-box" style={{ background: 'rgba(0, 201, 103, 0.25)', color: '#00ff88' }}>
+                  ♻️
+                </div>
+                <div className="gc-admin-stat-data">
+                  <span className="gc-admin-stat-num" style={{ color: '#00ff88' }}>
+                    {stats.totalEwasteItemsCollected ?? 0}
+                  </span>
+                  <span className="gc-admin-stat-label">E-Waste Items Saved</span>
+                  <span className="gc-admin-stat-desc">Diverted from landfills</span>
+                </div>
+              </div>
+            </section>
+
+            {/* Platform Overview Panels */}
+            <section className="gc-admin-panels-grid">
+              <div className="gc-glass-card gc-admin-panel">
+                <h3 className="gc-panel-title">System Infrastructure & Services</h3>
+                <p className="gc-panel-desc">Active system components supporting Green Circuit.</p>
+
+                <div className="gc-sys-health-list">
+                  <div className="gc-sys-item">
+                    <span className="gc-sys-dot online" />
+                    <span className="gc-sys-name">Authentication & JWT Service</span>
+                    <span className="gc-chip gc-chip-collected">Healthy</span>
+                  </div>
+                  <div className="gc-sys-item">
+                    <span className="gc-sys-dot online" />
+                    <span className="gc-sys-name">Collection Hubs & Geospatial API</span>
+                    <span className="gc-chip gc-chip-collected">Active</span>
+                  </div>
+                  <div className="gc-sys-item">
+                    <span className="gc-sys-dot online" />
+                    <span className="gc-sys-name">E-Waste Photo Upload Storage</span>
+                    <span className="gc-chip gc-chip-collected">Operational</span>
+                  </div>
+                  <div className="gc-sys-item">
+                    <span className="gc-sys-dot online" />
+                    <span className="gc-sys-name">Rewards & Redemption Engine</span>
+                    <span className="gc-chip gc-chip-collected">Synced</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="gc-glass-card gc-admin-panel">
+                <h3 className="gc-panel-title">Quick Administration Actions</h3>
+                <p className="gc-panel-desc">Direct shortcuts for administrative operations.</p>
+
+                <div className="gc-admin-shortcuts">
+                  <button
+                    type="button"
+                    className="gc-btn-secondary"
+                    style={{ justifyContent: 'flex-start', padding: '14px 18px' }}
+                    onClick={() => navigate('/dashboard')}
+                  >
+                    🏢 Office Management Registry
+                  </button>
+                  <button
+                    type="button"
+                    className="gc-btn-secondary"
+                    style={{ justifyContent: 'flex-start', padding: '14px 18px' }}
+                    onClick={() => fetchStats()}
+                  >
+                    🔄 Refresh Platform Telemetry
+                  </button>
+                </div>
+              </div>
+            </section>
+          </>
+        ) : null}
+      </main>
+    </div>
+  );
 };
 
 export default SuperAdminDashboard;

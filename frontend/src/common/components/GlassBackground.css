@@ -1,0 +1,154 @@
+/* ============================================================
+   GlassBackground Styles — Ambient Futuristic Apple/Liquid Glass
+   ============================================================ */
+
+.gc-global-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: #020d08;
+}
+
+.gc-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 15% 20%, rgba(0, 201, 103, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 85% 75%, rgba(0, 102, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(2, 22, 14, 0.9) 0%, #020d08 100%);
+}
+
+.gc-bg-circuit-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(0, 230, 118, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 230, 118, 0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.6;
+}
+
+/* ── Blobs ─────────────────────────────────────────────────── */
+.gc-bg-blobs {
+  position: absolute;
+  inset: 0;
+}
+
+.gc-bg-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  will-change: transform;
+  animation: blobFloat 22s ease-in-out infinite alternate;
+}
+
+.gc-bg-blob-1 {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(0, 201, 103, 0.22), rgba(0, 255, 102, 0.04));
+  top: -120px;
+  left: -100px;
+  animation-duration: 24s;
+}
+
+.gc-bg-blob-2 {
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(0, 102, 255, 0.18), rgba(0, 201, 177, 0.08));
+  bottom: -100px;
+  right: -80px;
+  animation-duration: 28s;
+  animation-delay: -6s;
+}
+
+.gc-bg-blob-3 {
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(0, 230, 118, 0.15), rgba(0, 188, 212, 0.06));
+  top: 40%;
+  left: 55%;
+  animation-duration: 20s;
+  animation-delay: -10s;
+}
+
+.gc-bg-blob-4 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.12), rgba(0, 255, 136, 0.05));
+  top: 15%;
+  right: 20%;
+  animation-duration: 18s;
+  animation-delay: -4s;
+}
+
+@keyframes blobFloat {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(40px, -30px) scale(1.06); }
+  66%  { transform: translate(-30px, 35px) scale(0.95); }
+  100% { transform: translate(25px, 20px) scale(1.02); }
+}
+
+/* ── Floating Spheres ──────────────────────────────────────── */
+.gc-bg-spheres {
+  position: absolute;
+  inset: 0;
+}
+
+.gc-bg-sphere {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 32%,
+    rgba(255, 255, 255, 0.22),
+    rgba(0, 230, 118, 0.08) 45%,
+    rgba(0, 120, 70, 0.03) 80%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    0 8px 24px rgba(0, 230, 118, 0.1);
+  will-change: transform;
+  animation: sphereGlide linear infinite;
+}
+
+.gc-bg-sphere-1 { width: 75px; height: 75px; left: 8%; top: 18%; animation-duration: 20s; }
+.gc-bg-sphere-2 { width: 45px; height: 45px; left: 85%; top: 22%; animation-duration: 25s; animation-delay: -5s; }
+.gc-bg-sphere-3 { width: 32px; height: 32px; left: 18%; top: 75%; animation-duration: 18s; animation-delay: -9s; }
+.gc-bg-sphere-4 { width: 60px; height: 60px; left: 78%; top: 68%; animation-duration: 30s; animation-delay: -3s; }
+.gc-bg-sphere-5 { width: 26px; height: 26px; left: 48%; top: 12%; animation-duration: 16s; animation-delay: -7s; }
+.gc-bg-sphere-6 { width: 40px; height: 40px; left: 32%; top: 88%; animation-duration: 22s; animation-delay: -12s; }
+
+@keyframes sphereGlide {
+  0%   { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
+  50%  { transform: translateY(-35px) rotate(180deg); opacity: 0.85; }
+  100% { transform: translateY(0px) rotate(360deg); opacity: 0.6; }
+}
+
+/* ── Floating Eco Icons ────────────────────────────────────── */
+.gc-bg-icons {
+  position: absolute;
+  inset: 0;
+}
+
+.gc-bg-icon {
+  position: absolute;
+  opacity: 0.08;
+  font-size: 1.8rem;
+  color: #00ff88;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.3));
+  will-change: transform;
+  animation: ecoDrift linear infinite;
+}
+
+.gc-bg-icon-1 { left: 6%;  top: 30%; font-size: 2.4rem; animation-duration: 22s; }
+.gc-bg-icon-2 { left: 90%; top: 38%; font-size: 2.1rem; animation-duration: 26s; animation-delay: -7s; }
+.gc-bg-icon-3 { left: 22%; top: 65%; font-size: 2rem;   animation-duration: 24s; animation-delay: -12s; }
+.gc-bg-icon-4 { left: 82%; top: 80%; font-size: 2.2rem; animation-duration: 28s; animation-delay: -4s; }
+.gc-bg-icon-5 { left: 52%; top: 85%; font-size: 1.8rem; animation-duration: 20s; animation-delay: -10s; }
+.gc-bg-icon-6 { left: 42%; top: 25%; font-size: 2.3rem; animation-duration: 32s; animation-delay: -15s; }
+
+@keyframes ecoDrift {
+  0%   { transform: translateY(0px) rotate(0deg); opacity: 0.06; }
+  50%  { transform: translateY(-25px) rotate(15deg); opacity: 0.12; }
+  100% { transform: translateY(0px) rotate(0deg); opacity: 0.06; }
+}

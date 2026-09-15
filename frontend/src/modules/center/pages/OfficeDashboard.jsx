@@ -1,91 +1,104 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../../user/context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { Box, Container, Typography, AppBar, Toolbar, Button, Paper, Tabs, Tab } from '@mui/material';
+import GlassBackground from '../../../common/components/GlassBackground';
+import GlassNavbar from '../../../common/components/GlassNavbar';
 import OfficeList from '../components/OfficeList';
 import OfficeForm from '../components/OfficeForm';
 import OfficeRequestList from '../../pickup/components/OfficeRequestList';
+import './OfficeDashboard.css';
 
 const OfficeDashboard = () => {
-    const { user, logout } = useContext(AuthContext);
-    const navigate = useNavigate();
-    
-    const [tabIndex, setTabIndex] = useState(0);
-    const [editingOffice, setEditingOffice] = useState(null);
+  const { user } = useContext(AuthContext);
+  const [tabIndex, setTabIndex] = useState(0);
+  const [editingOffice, setEditingOffice] = useState(null);
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
+  const handleTabChange = (index) => {
+    setTabIndex(index);
+    if (index === 0) {
+      setEditingOffice(null);
+    }
+  };
 
-    const handleTabChange = (event, newValue) => {
-        setTabIndex(newValue);
-        if (newValue === 0) {
-            setEditingOffice(null);
-        }
-    };
+  const handleEdit = (office) => {
+    setEditingOffice(office);
+    setTabIndex(1);
+  };
 
-    const handleEdit = (office) => {
-        setEditingOffice(office);
-        setTabIndex(1);
-    };
+  const handleSaveSuccess = () => {
+    setEditingOffice(null);
+    setTabIndex(0);
+  };
 
-    const handleSaveSuccess = () => {
-        setEditingOffice(null);
-        setTabIndex(0);
-    };
+  if (!user) return null;
 
-    if (!user) return null;
+  return (
+    <div className="gc-office-dash-root">
+      <GlassBackground />
+      <GlassNavbar />
 
-    return (
-        <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: '#f5f5f5' }}>
-            <AppBar position="static" sx={{ background: 'linear-gradient(45deg, #1976d2 30%, #00d4ff 90%)' }}>
-                <Toolbar>
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        Office Management Dashboard
-                    </Typography>
-                    <Typography variant="subtitle1" sx={{ mr: 2 }}>
-                        {user.name} ({user.role})
-                    </Typography>
-                    <Button color="inherit" onClick={handleLogout}>Logout</Button>
-                </Toolbar>
-            </AppBar>
+      <main className="gc-office-dash-container">
+        {/* Header section */}
+        <section className="gc-office-dash-header">
+          <div>
+            <span className="gc-badge-portal" style={{ color: '#00d4ff', borderColor: 'rgba(0, 212, 255, 0.3)', background: 'rgba(0, 212, 255, 0.1)' }}>
+              Office Management Portal
+            </span>
+            <h1 className="gc-dash-heading">
+              Collection Center & Operations Console
+            </h1>
+            <p className="gc-dash-subheading">
+              Manage authorized regional collection facilities, supervise incoming disposal requests, and coordinate logistical pickups.
+            </p>
+          </div>
+        </section>
 
-            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                <Paper sx={{ width: '100%', mb: 2 }}>
-                    <Tabs
-                        value={tabIndex}
-                        onChange={handleTabChange}
-                        indicatorColor="primary"
-                        textColor="primary"
-                        centered
-                    >
-                        <Tab label="View / Search Offices" />
-                        <Tab label={editingOffice ? "Edit Office" : "Add New Office"} />
-                        <Tab label="Pending Requests" />
-                    </Tabs>
-                </Paper>
+        {/* Tab Navigation */}
+        <div className="gc-office-tabs-bar">
+          <div className="gc-tabs-header">
+            <button
+              className={`gc-tab-button ${tabIndex === 0 ? 'active' : ''}`}
+              onClick={() => handleTabChange(0)}
+            >
+              🏢 Offices Directory
+            </button>
+            <button
+              className={`gc-tab-button ${tabIndex === 1 ? 'active' : ''}`}
+              onClick={() => handleTabChange(1)}
+            >
+              {editingOffice ? '✏️ Edit Office' : '➕ Register Hub'}
+            </button>
+            <button
+              className={`gc-tab-button ${tabIndex === 2 ? 'active' : ''}`}
+              onClick={() => handleTabChange(2)}
+            >
+              📥 Incoming Requests
+            </button>
+          </div>
+        </div>
 
-                {tabIndex === 0 && (
-                    <Paper sx={{ p: 3, elevation: 3 }}>
-                        <OfficeList onEdit={handleEdit} />
-                    </Paper>
-                )}
+        {/* Tab 0: Office List */}
+        {tabIndex === 0 && (
+          <div className="gc-glass-card gc-office-content-card">
+            <OfficeList onEdit={handleEdit} />
+          </div>
+        )}
 
-                {tabIndex === 1 && (
-                    <Paper sx={{ p: 3, elevation: 3 }}>
-                        <OfficeForm office={editingOffice} onSuccess={handleSaveSuccess} />
-                    </Paper>
-                )}
+        {/* Tab 1: Office Form */}
+        {tabIndex === 1 && (
+          <div className="gc-glass-card gc-office-content-card" style={{ maxWidth: '850px', margin: '0 auto' }}>
+            <OfficeForm office={editingOffice} onSuccess={handleSaveSuccess} />
+          </div>
+        )}
 
-                {tabIndex === 2 && (
-                    <Paper sx={{ p: 3, elevation: 3 }}>
-                        <OfficeRequestList />
-                    </Paper>
-                )}
-            </Container>
-        </Box>
-    );
+        {/* Tab 2: Incoming Requests */}
+        {tabIndex === 2 && (
+          <div className="gc-glass-card gc-office-content-card">
+            <OfficeRequestList />
+          </div>
+        )}
+      </main>
+    </div>
+  );
 };
 
 export default OfficeDashboard;

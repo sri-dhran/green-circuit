@@ -1,0 +1,39 @@
+/* ============================================================
+   OfficeDashboard Styles — Liquid Glass Office Operations Console
+   ============================================================ */
+
+.gc-office-dash-root {
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--gc-bg);
+  padding-bottom: 60px;
+}
+
+.gc-office-dash-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.gc-office-dash-header {
+  margin-bottom: 24px;
+}
+
+.gc-office-tabs-bar {
+  margin-bottom: 24px;
+}
+
+.gc-office-content-card {
+  padding: 28px;
+}
+
+@media (max-width: 600px) {
+  .gc-office-dash-container {
+    padding: 16px;
+  }
+  .gc-office-content-card {
+    padding: 18px;
+  }
+}
