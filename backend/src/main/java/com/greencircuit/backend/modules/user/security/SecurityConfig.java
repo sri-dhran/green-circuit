@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/uploads/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/offices/**", "/api/collection-centers/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/offices/**", "/api/collection-centers/**", "/api/rewards").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

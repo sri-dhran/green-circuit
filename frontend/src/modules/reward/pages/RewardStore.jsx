@@ -24,16 +24,23 @@ const RewardStore = () => {
 
   const fetchData = async () => {
     setLoading(true);
+    setError('');
     try {
-      const [rewardsData, redemptionsData] = await Promise.all([
-        rewardService.getAvailableRewards(),
-        rewardService.getMyRedemptions()
-      ]);
+      const rewardsData = await rewardService.getAvailableRewards();
       setRewards(Array.isArray(rewardsData) ? rewardsData : []);
-      setRedemptions(Array.isArray(redemptionsData) ? redemptionsData : []);
+
+      try {
+        const redemptionsData = await rewardService.getMyRedemptions();
+        setRedemptions(Array.isArray(redemptionsData) ? redemptionsData : []);
+      } catch (redemptionErr) {
+        console.warn('Could not fetch user redemptions:', redemptionErr);
+        setRedemptions([]);
+      }
+
       if (refreshUser) refreshUser();
-    } catch {
-      setError('Failed to load rewards store data.');
+    } catch (err) {
+      console.error('Failed to load rewards store data:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to load rewards store data.');
     } finally {
       setLoading(false);
     }
@@ -81,9 +88,26 @@ const RewardStore = () => {
 
         {/* Feedback alerts */}
         {error && (
-          <div className="gc-form-error-banner" style={{ margin: '20px 0' }}>
+          <div className="gc-form-error-banner" style={{ margin: '20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
             <span>⚠️ {error}</span>
-            <button type="button" className="gc-banner-close" onClick={() => setError('')}>✕</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={fetchData}
+                style={{
+                  background: 'rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  borderRadius: '6px',
+                  color: '#fff',
+                  padding: '4px 12px',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem'
+                }}
+              >
+                🔄 Retry
+              </button>
+              <button type="button" className="gc-banner-close" onClick={() => setError('')}>✕</button>
+            </div>
           </div>
         )}
 

@@ -19,7 +19,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<PrivateRoute requiredRole="OFFICE"><OfficeDashboard /></PrivateRoute>} />
           <Route path="/user-dashboard" element={<PrivateRoute requiredRole="USER"><UserDashboard /></PrivateRoute>} />
-          <Route path="/reward-store" element={<PrivateRoute requiredRole="USER"><RewardStore /></PrivateRoute>} />
+          <Route path="/reward-store" element={<PrivateRoute><RewardStore /></PrivateRoute>} />
           <Route path="/admin" element={<PrivateRoute requiredRole="SUPER_ADMIN"><SuperAdminDashboard /></PrivateRoute>} />
         </Routes>
       </Router>

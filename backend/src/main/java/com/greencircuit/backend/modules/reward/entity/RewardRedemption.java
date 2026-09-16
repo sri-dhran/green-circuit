@@ -1,5 +1,6 @@
 package com.greencircuit.backend.modules.reward.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.greencircuit.backend.modules.user.entity.User;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ public class RewardRedemption {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     @ManyToOne
