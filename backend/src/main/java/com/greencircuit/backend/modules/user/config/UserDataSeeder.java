@@ -46,34 +46,38 @@ public class UserDataSeeder {
             // Seed Office users linked to specific collection centers
             List<Office> offices = officeRepository.findAll();
             if (!offices.isEmpty()) {
-                Office techazarOffice = offices.stream()
-                        .filter(o -> o.getOfficeName() != null && o.getOfficeName().contains("Techazar"))
-                        .findFirst()
-                        .orElse(offices.get(0));
-
-                User officeUser = userRepository.findByEmail("techazar@greencircuit.com").orElse(new User());
-                officeUser.setName("Techazar Center Manager");
-                officeUser.setEmail("techazar@greencircuit.com");
-                officeUser.setPassword(passwordEncoder.encode("password123"));
-                officeUser.setRole(Role.OFFICE);
-                officeUser.setOffice(techazarOffice);
-                userRepository.save(officeUser);
-                System.out.println("Seeded/updated office user: techazar@greencircuit.com");
-
-                Office greenEraOffice = offices.stream()
-                        .filter(o -> o.getOfficeName() != null && o.getOfficeName().contains("Green Era"))
-                        .findFirst()
-                        .orElse(offices.get(0));
-
-                User greenEraUser = userRepository.findByEmail("greenera@greencircuit.com").orElse(new User());
-                greenEraUser.setName("Green Era Logistics Manager");
-                greenEraUser.setEmail("greenera@greencircuit.com");
-                greenEraUser.setPassword(passwordEncoder.encode("password123"));
-                greenEraUser.setRole(Role.OFFICE);
-                greenEraUser.setOffice(greenEraOffice);
-                userRepository.save(greenEraUser);
-                System.out.println("Seeded/updated office user: greenera@greencircuit.com");
+                seedOfficeStaff(userRepository, passwordEncoder, offices, "Techazar", "techazar@greencircuit.com", "Techazar Center Manager");
+                seedOfficeStaff(userRepository, passwordEncoder, offices, "Green Era", "greenera@greencircuit.com", "Green Era Logistics Manager");
+                seedOfficeStaff(userRepository, passwordEncoder, offices, "Adhira", "adhira@greencircuit.com", "Adhira Operations Lead");
+                seedOfficeStaff(userRepository, passwordEncoder, offices, "Green India", "greenindia@greencircuit.com", "Green India Plant Supervisor");
+                seedOfficeStaff(userRepository, passwordEncoder, offices, "Dharani", "dharani@greencircuit.com", "Dharani Processing Head");
+                seedOfficeStaff(userRepository, passwordEncoder, offices, "Eco Birbals", "ecobirbals@greencircuit.com", "Eco Birbals Hub Manager");
             }
         };
+    }
+
+    private void seedOfficeStaff(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            List<Office> offices,
+            String officeNameKeyword,
+            String email,
+            String managerName
+    ) {
+        Office targetOffice = offices.stream()
+                .filter(o -> o.getOfficeName() != null && o.getOfficeName().toLowerCase().contains(officeNameKeyword.toLowerCase()))
+                .findFirst()
+                .orElse(null);
+
+        if (targetOffice != null) {
+            User staff = userRepository.findByEmail(email).orElse(new User());
+            staff.setName(managerName);
+            staff.setEmail(email);
+            staff.setPassword(passwordEncoder.encode("password123"));
+            staff.setRole(Role.OFFICE);
+            staff.setOffice(targetOffice);
+            userRepository.save(staff);
+            System.out.println("Seeded/updated office user: " + email + " for office: " + targetOffice.getOfficeName());
+        }
     }
 }
