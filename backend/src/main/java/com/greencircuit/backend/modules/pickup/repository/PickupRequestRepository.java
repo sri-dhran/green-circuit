@@ -12,4 +12,5 @@ import java.util.List;
 public interface PickupRequestRepository extends JpaRepository<PickupRequest, Long> {
     List<PickupRequest> findByUserOrderByCreatedAtDesc(User user);
     List<PickupRequest> findByOfficeOrderByCreatedAtDesc(Office office);
+    List<PickupRequest> findAllByOrderByCreatedAtDesc();
 }

@@ -92,6 +92,11 @@ public class PickupRequestService {
         User user = userRepository.findByEmail(officeEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         
+        // SUPER_ADMIN can see all requests across all offices
+        if (user.getRole() == com.greencircuit.backend.modules.user.entity.Role.SUPER_ADMIN) {
+            return pickupRequestRepository.findAllByOrderByCreatedAtDesc();
+        }
+        
         Office office = user.getOffice();
         if (office == null) {
             throw new IllegalArgumentException("This account is not linked to an office");

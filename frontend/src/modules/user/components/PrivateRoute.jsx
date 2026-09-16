@@ -18,7 +18,8 @@ const PrivateRoute = ({ children, requiredRole }) => {
         return <Navigate to="/login" replace />;
     }
 
-    if (requiredRole && user.role !== requiredRole) {
+    // SUPER_ADMIN can access all protected routes for administrative oversight
+    if (requiredRole && user.role !== requiredRole && user.role !== 'SUPER_ADMIN') {
         if (user.role === 'OFFICE') {
             return <Navigate to="/dashboard" replace />;
         } else {
