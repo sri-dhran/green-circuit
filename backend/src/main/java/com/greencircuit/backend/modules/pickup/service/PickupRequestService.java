@@ -157,32 +157,40 @@ public class PickupRequestService {
         RequestStatus oldStatus = request.getStatus();
         RequestStatus newStatus;
         try {
-            newStatus = RequestStatus.valueOf(status);
+            newStatus = RequestStatus.valueOf(status.trim().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status: " + status + ". Valid statuses are: PENDING, ACCEPTED, REJECTED, PICKUP_SCHEDULED, COLLECTED, RECYCLED, CANCELLED");
+            throw new IllegalArgumentException("Invalid status: " + status + ". Valid statuses are: PENDING, ACCEPTED, REJECTED, PICKUP_SCHEDULED, COLLECTED, RECEIVED_AT_OFFICE, RECYCLED, COMPLETED, CANCELLED");
         }
         request.setStatus(newStatus);
         
-        if (response != null) {
+        if (response != null && !response.isBlank()) {
             request.setCollectorResponse(response);
         }
 
-        if (newStatus == RequestStatus.COLLECTED || newStatus == RequestStatus.RECYCLED) {
-            request.setCompletedAt(LocalDateTime.now());
-            if (newStatus == RequestStatus.RECYCLED && oldStatus != RequestStatus.RECYCLED) {
+        if (newStatus == RequestStatus.COLLECTED || newStatus == RequestStatus.RECEIVED_AT_OFFICE || newStatus == RequestStatus.RECYCLED || newStatus == RequestStatus.COMPLETED) {
+            if (request.getCompletedAt() == null && (newStatus == RequestStatus.RECYCLED || newStatus == RequestStatus.COMPLETED)) {
+                request.setCompletedAt(LocalDateTime.now());
+            }
+            
+            // Award reward points on recycling completion if not already awarded
+            if ((newStatus == RequestStatus.RECYCLED || newStatus == RequestStatus.COMPLETED) 
+                    && oldStatus != RequestStatus.RECYCLED && oldStatus != RequestStatus.COMPLETED) {
                 User requestUser = request.getUser();
-                requestUser.setRewardPoints(requestUser.getRewardPoints() + 10);
+                int earnedPoints = (request.getQuantity() != null && request.getQuantity() > 0) ? request.getQuantity() * 25 : 25;
+                requestUser.setRewardPoints(requestUser.getRewardPoints() + earnedPoints);
                 userRepository.save(requestUser);
             }
         }
 
         PickupRequest saved = pickupRequestRepository.save(request);
 
-        // Notifications for other statuses
+        // Notifications for statuses
         if (newStatus == RequestStatus.COLLECTED) {
-            createAndSendNotification(request.getUser(), "Your e-waste has been successfully collected.", "Green Circuit - E-Waste Collected");
-        } else if (newStatus == RequestStatus.RECYCLED) {
-            createAndSendNotification(request.getUser(), "Your e-waste has been successfully processed for recycling. You earned 10 reward points!", "Green Circuit - E-Waste Recycled");
+            createAndSendNotification(request.getUser(), "Your e-waste has been successfully picked up by our logistics agent.", "Green Circuit - E-Waste Collected");
+        } else if (newStatus == RequestStatus.RECEIVED_AT_OFFICE) {
+            createAndSendNotification(request.getUser(), "Your e-waste has safely arrived at " + request.getOffice().getOfficeName() + " for inspection.", "Green Circuit - Arrived at Center");
+        } else if (newStatus == RequestStatus.RECYCLED || newStatus == RequestStatus.COMPLETED) {
+            createAndSendNotification(request.getUser(), "Your e-waste has been certified and processed for eco-friendly recycling! Reward points have been added to your balance.", "Green Circuit - Recycling Completed");
         }
         
         return saved;

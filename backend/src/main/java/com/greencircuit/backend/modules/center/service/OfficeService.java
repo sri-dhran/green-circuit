@@ -73,9 +73,10 @@ public class OfficeService {
     }
 
     public List<OfficeDTO> findNearbyCenters(Double latitude, Double longitude, Double radiusKm) {
-        List<Office> activeOffices = officeRepository.findByStatus("ACTIVE");
+        List<Office> allOffices = officeRepository.findAll();
         
-        return activeOffices.stream()
+        return allOffices.stream()
+                .filter(office -> office.getStatus() == null || !"INACTIVE".equalsIgnoreCase(office.getStatus()))
                 .filter(office -> office.getLatitude() != null && office.getLongitude() != null)
                 .map(office -> {
                     Double distance = calculateHaversineDistance(latitude, longitude, office.getLatitude(), office.getLongitude());

@@ -20,7 +20,7 @@ const OfficeList = ({ onEdit }) => {
       setOffices(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching offices:', err);
-      setError('Unable to fetch office directory.');
+      setError(err.response?.data?.message || err.message || 'Unable to fetch office directory.');
     } finally {
       setLoading(false);
     }

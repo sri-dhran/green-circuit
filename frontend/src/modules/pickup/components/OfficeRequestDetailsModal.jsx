@@ -1,14 +1,8 @@
 import React, { useState } from 'react';
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 import { pickupRequestService } from '../api/pickupRequestService';
 import { getImageUrl } from '../../../common/api/axiosConfig';
+import InteractiveMap from '../../../common/components/InteractiveMap';
 import './OfficeRequestDetailsModal.css';
-
-const mapContainerStyle = {
-  width: '100%',
-  height: '240px',
-  borderRadius: '14px',
-};
 
 const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete }) => {
   const [responseMsg, setResponseMsg] = useState('');
@@ -26,11 +20,6 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
 
   // For subsequent statuses
   const [nextStatus, setNextStatus] = useState('');
-
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
-  });
 
   if (!open || !request) return null;
 
@@ -89,6 +78,11 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
 
   const imageUrl = getImageUrl(request.photoPath);
 
+  const userLocationObj =
+    request.latitude && request.longitude
+      ? { lat: request.latitude, lng: request.longitude }
+      : null;
+
   return (
     <>
       <div className="gc-modal-backdrop" onClick={onClose}>
@@ -126,7 +120,7 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
                   </div>
                   <div className="gc-detail-pair">
                     <span className="gc-detail-key">Pickup Address</span>
-                    <span className="gc-detail-val">{request.userLocation || 'Not provided by user'}</span>
+                    <span className="gc-detail-val">{request.userLocation || 'GPS coordinates only'}</span>
                   </div>
                 </div>
 
@@ -146,7 +140,7 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
                   </div>
                   <div className="gc-detail-pair">
                     <span className="gc-detail-key">Quantity</span>
-                    <span className="gc-detail-val">{request.quantity}</span>
+                    <span className="gc-detail-val">{request.quantity} unit(s)</span>
                   </div>
                   {request.approximateWeight && (
                     <div className="gc-detail-pair">
@@ -161,7 +155,7 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
                 </div>
               </div>
 
-              {/* Right Column: Uploaded Image & Google Map */}
+              {/* Right Column: Uploaded Image & Interactive Map */}
               <div className="gc-admin-req-col">
                 {/* Uploaded Waste Photo */}
                 <div className="gc-card-subpanel">
@@ -222,38 +216,16 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
 
                 {/* Pickup Location Map */}
                 <div className="gc-card-subpanel" style={{ marginTop: '16px' }}>
-                  <h4 className="gc-subpanel-title">📍 Pickup Location Map</h4>
-                  {request.latitude && request.longitude && isLoaded ? (
-                    <div className="gc-admin-map-wrapper">
-                      <GoogleMap
-                        mapContainerStyle={mapContainerStyle}
-                        center={{ lat: request.latitude, lng: request.longitude }}
-                        zoom={14}
-                        options={{
-                          styles: [
-                            { elementType: 'geometry', stylers: [{ color: '#0f2419' }] },
-                            { elementType: 'labels.text.stroke', stylers: [{ color: '#091811' }] },
-                            { elementType: 'labels.text.fill', stylers: [{ color: '#749882' }] },
-                            { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1a3c2b' }] }
-                          ]
-                        }}
-                      >
-                        <Marker
-                          position={{ lat: request.latitude, lng: request.longitude }}
-                          title="User Pickup Location"
-                          icon={{ url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png' }}
-                        />
-                      </GoogleMap>
-                    </div>
-                  ) : (
-                    <div className="gc-no-photo-box" style={{ height: '120px' }}>
-                      <span>
-                        {request.latitude && request.longitude
-                          ? 'Loading Google Maps…'
-                          : 'Coordinates not provided for this pickup.'}
-                      </span>
-                    </div>
-                  )}
+                  <h4 className="gc-subpanel-title">📍 User Pickup vs Office Location</h4>
+                  <div style={{ height: '200px', borderRadius: '12px', overflow: 'hidden' }}>
+                    <InteractiveMap
+                      userLocation={userLocationObj}
+                      offices={request.office ? [request.office] : []}
+                      selectedOffice={request.office}
+                      height="200px"
+                      showRoute={true}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -326,12 +298,12 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
               </div>
             )}
 
-            {/* PICKUP_SCHEDULED or COLLECTED: Update status */}
-            {(request.status === 'PICKUP_SCHEDULED' || request.status === 'COLLECTED') && (
+            {/* Advance Recycling Pipeline for SCHEDULED, COLLECTED, RECEIVED_AT_OFFICE */}
+            {(request.status === 'PICKUP_SCHEDULED' || request.status === 'COLLECTED' || request.status === 'RECEIVED_AT_OFFICE') && (
               <div className="gc-workflow-box">
                 <h4 className="gc-workflow-title">♻️ Advance Recycling Pipeline</h4>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <div style={{ minWidth: '220px' }}>
+                  <div style={{ minWidth: '240px' }}>
                     <select
                       className="gc-select-field"
                       value={nextStatus}
@@ -339,10 +311,16 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
                     >
                       <option value="">-- Choose Next Status --</option>
                       {request.status === 'PICKUP_SCHEDULED' && (
-                        <option value="COLLECTED">COLLECTED (Items Received)</option>
+                        <option value="COLLECTED">COLLECTED (Agent picked up device)</option>
                       )}
-                      {request.status === 'COLLECTED' && (
-                        <option value="RECYCLED">RECYCLED (Certified & Rewards Dispatched)</option>
+                      {(request.status === 'PICKUP_SCHEDULED' || request.status === 'COLLECTED') && (
+                        <option value="RECEIVED_AT_OFFICE">RECEIVED_AT_OFFICE (Arrived at Facility)</option>
+                      )}
+                      {(request.status === 'COLLECTED' || request.status === 'RECEIVED_AT_OFFICE') && (
+                        <>
+                          <option value="RECYCLED">RECYCLED (Certified & Eco-Disposed)</option>
+                          <option value="COMPLETED">COMPLETED (Award Reward Points)</option>
+                        </>
                       )}
                     </select>
                   </div>

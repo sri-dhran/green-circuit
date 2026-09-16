@@ -23,14 +23,14 @@ public class RequestStatusConverter implements AttributeConverter<RequestStatus,
         if (dbValue == null || dbValue.isBlank()) {
             return RequestStatus.PENDING;
         }
-        // Handle legacy status values
-        return switch (dbValue.trim().toUpperCase()) {
-            case "COMPLETED" -> RequestStatus.COLLECTED;
+        String clean = dbValue.trim().toUpperCase();
+        return switch (clean) {
+            case "COMPLETED" -> RequestStatus.COMPLETED;
+            case "RECEIVED" -> RequestStatus.RECEIVED_AT_OFFICE;
             default -> {
                 try {
-                    yield RequestStatus.valueOf(dbValue.trim().toUpperCase());
+                    yield RequestStatus.valueOf(clean);
                 } catch (IllegalArgumentException e) {
-                    // Fallback for any other unknown status
                     yield RequestStatus.PENDING;
                 }
             }

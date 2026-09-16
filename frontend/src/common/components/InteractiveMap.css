@@ -1,0 +1,126 @@
+.gc-interactive-map-root {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #111b15;
+}
+
+.gc-leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Custom User Pin */
+.gc-map-user-pin-wrapper {
+  background: transparent !important;
+  border: none !important;
+}
+
+.gc-map-user-pin {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: rgba(0, 212, 255, 0.25);
+  border: 2px solid #00d4ff;
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+  cursor: grab;
+}
+
+.gc-map-pulse-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid #00d4ff;
+  animation: gc-pulse-anim 2s infinite ease-out;
+}
+
+@keyframes gc-pulse-anim {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* Custom Office Pin */
+.gc-map-office-pin-wrapper {
+  background: transparent !important;
+  border: none !important;
+}
+
+.gc-map-office-pin {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: rgba(0, 230, 118, 0.2);
+  border: 2px solid #00e676;
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(0, 230, 118, 0.5);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.gc-map-office-pin:hover,
+.gc-map-office-pin.is-selected {
+  transform: scale(1.25);
+  background: #00e676;
+  border-color: #ffffff;
+  box-shadow: 0 0 20px rgba(0, 230, 118, 0.9);
+}
+
+.gc-map-popup {
+  font-family: inherit;
+  min-width: 180px;
+  max-width: 240px;
+}
+
+.gc-map-popup-btn {
+  width: 100%;
+  background: #00c853;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.gc-map-popup-btn:hover {
+  background: #00e676;
+}
+
+.gc-map-floating-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 25, 18, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 230, 118, 0.3);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #00ff88;
+  z-index: 1000;
+  pointer-events: none;
+  white-space: nowrap;
+}

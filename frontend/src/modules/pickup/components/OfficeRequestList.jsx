@@ -9,7 +9,9 @@ const getStatusChipClass = (status) => {
     case 'ACCEPTED': return 'gc-chip-accepted';
     case 'PICKUP_SCHEDULED': return 'gc-chip-scheduled';
     case 'COLLECTED': return 'gc-chip-collected';
-    case 'RECYCLED': return 'gc-chip-recycled';
+    case 'RECEIVED_AT_OFFICE': return 'gc-chip-received';
+    case 'RECYCLED':
+    case 'COMPLETED': return 'gc-chip-recycled';
     case 'REJECTED': return 'gc-chip-rejected';
     default: return 'gc-chip-pending';
   }
@@ -21,6 +23,7 @@ const OfficeRequestList = () => {
   const [error, setError] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchRequests = async () => {
     try {
@@ -45,9 +48,17 @@ const OfficeRequestList = () => {
     fetchRequests();
   };
 
-  const filteredRequests = statusFilter === 'ALL'
-    ? requests
-    : requests.filter((r) => r.status === statusFilter);
+  const filteredRequests = requests.filter((r) => {
+    const matchesStatus = statusFilter === 'ALL' || r.status === statusFilter;
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return matchesStatus;
+
+    const matchUser = r.user?.name?.toLowerCase().includes(query) || r.user?.email?.toLowerCase().includes(query);
+    const matchDevice = r.deviceName?.toLowerCase().includes(query) || r.deviceCategory?.toLowerCase().includes(query);
+    const matchId = String(r.id).includes(query);
+
+    return matchesStatus && (matchUser || matchDevice || matchId);
+  });
 
   return (
     <div className="gc-office-req-wrapper">
@@ -60,8 +71,24 @@ const OfficeRequestList = () => {
           </p>
         </div>
 
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button type="button" className="gc-btn-secondary" onClick={fetchRequests}>
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <input
+          type="text"
+          className="gc-search-input"
+          placeholder="Filter by user, device, or request ID…"
+          style={{ maxWidth: '340px' }}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
         <div className="gc-filter-group">
-          {['ALL', 'PENDING', 'ACCEPTED', 'PICKUP_SCHEDULED', 'COLLECTED', 'RECYCLED'].map((st) => (
+          {['ALL', 'PENDING', 'ACCEPTED', 'PICKUP_SCHEDULED', 'COLLECTED', 'RECEIVED_AT_OFFICE', 'COMPLETED', 'RECYCLED'].map((st) => (
             <button
               key={st}
               type="button"

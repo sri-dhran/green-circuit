@@ -1,18 +1,12 @@
 import React, { useState, useRef } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
 import { pickupRequestService } from '../api/pickupRequestService';
 import { officeService } from '../../center/api/officeService';
+import InteractiveMap from '../../../common/components/InteractiveMap';
 import './PickupRequestForm.css';
 
-const categories = ['Smartphone', 'Laptop', 'Tablet', 'Desktop', 'Accessories', 'Other'];
+const categories = ['Smartphone', 'Laptop', 'Tablet', 'Desktop', 'Television', 'Home Appliance', 'Batteries & Chargers', 'Accessories', 'Other E-Waste'];
 
-const mapContainerStyle = {
-  width: '100%',
-  height: '380px',
-  borderRadius: '16px',
-};
-
-const centerDefault = { lat: 11.0168, lng: 76.9558 }; // Default Coimbatore
+const COIMBATORE_DEFAULT = { lat: 10.9018, lng: 76.9962 }; // Malumichampatti, Coimbatore
 
 const PickupRequestForm = ({ onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -32,21 +26,17 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Map & Office State
-  const [location, setLocation] = useState(null);
-  const [locationError, setLocationError] = useState(null);
+  // Map & Location State
+  const [userCoords, setUserCoords] = useState(COIMBATORE_DEFAULT);
+  const [gpsActive, setGpsActive] = useState(false);
+  const [gpsAccuracy, setGpsAccuracy] = useState(null);
+  const [locationStatus, setLocationStatus] = useState('');
   const [offices, setOffices] = useState([]);
   const [mapLoading, setMapLoading] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
-  const [selectedMarker, setSelectedMarker] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState(null);
 
   const fileInputRef = useRef(null);
-
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
-  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -94,83 +84,99 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleFindCollectors = () => {
+  // Real Geolocation handling
+  const requestCurrentLocation = (autoSelectFirst = false) => {
+    setLocationStatus('Acquiring real-time GPS coordinates…');
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          const accuracy = Math.round(position.coords.accuracy);
+
+          const newCoords = { lat, lng };
+          setUserCoords(newCoords);
+          setGpsActive(true);
+          setGpsAccuracy(accuracy);
+          setLocationStatus(`GPS Locked: ${lat.toFixed(4)}, ${lng.toFixed(4)} (±${accuracy}m accuracy)`);
+
+          if (!formData.userLocation) {
+            setFormData((prev) => ({
+              ...prev,
+              userLocation: `Pickup Coordinates: ${lat.toFixed(5)}, ${lng.toFixed(5)}`
+            }));
+          }
+
+          loadOffices(newCoords, autoSelectFirst);
+        },
+        (err) => {
+          console.warn('Geolocation access error or denied:', err);
+          setGpsActive(false);
+          setLocationStatus('GPS unavailable or permission denied. Defaulted to Coimbatore area. You can click on map or edit address.');
+          loadOffices(COIMBATORE_DEFAULT, autoSelectFirst);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    } else {
+      setLocationStatus('Geolocation not supported by browser. Showing all Coimbatore facilities.');
+      loadOffices(COIMBATORE_DEFAULT, autoSelectFirst);
+    }
+  };
+
+  const loadOffices = async (coords, autoSelectFirst = false) => {
+    setMapLoading(true);
+    try {
+      let data = await officeService.getNearbyCenters(coords.lat, coords.lng, 100.0);
+      if (!data || data.length === 0) {
+        data = await officeService.getAllOffices();
+      }
+      const activeList = Array.isArray(data) ? data.filter(o => o.status === 'ACTIVE' || !o.status) : [];
+      setOffices(activeList);
+
+      if (autoSelectFirst && activeList.length > 0 && !selectedOffice) {
+        setSelectedOffice(activeList[0]);
+      }
+    } catch (err) {
+      console.warn('Could not fetch nearby offices, fetching all:', err);
+      try {
+        const all = await officeService.getAllOffices();
+        setOffices(Array.isArray(all) ? all : []);
+      } catch (err2) {
+        console.error('Failed to load offices:', err2);
+      }
+    } finally {
+      setMapLoading(false);
+    }
+  };
+
+  const handleOpenMapModal = () => {
     if (!formData.deviceName || !formData.deviceCategory || !formData.description || !file) {
       setError('Please fill in Device Name, Category, Description and upload a photo first.');
       return;
     }
     setError(null);
     setShowMapModal(true);
-    setMapLoading(true);
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const currentLoc = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          setLocation(currentLoc);
-          if (!formData.userLocation) {
-            setFormData((prev) => ({
-              ...prev,
-              userLocation: `GPS: ${currentLoc.lat.toFixed(4)}, ${currentLoc.lng.toFixed(4)}`
-            }));
-          }
-          fetchNearbyOffices(currentLoc);
-        },
-        (err) => {
-          console.warn('Geolocation unavailable or denied, falling back to default:', err);
-          setLocation(centerDefault);
-          fetchNearbyOffices(centerDefault);
-        },
-        { timeout: 8000 }
-      );
-    } else {
-      setLocation(centerDefault);
-      fetchNearbyOffices(centerDefault);
-    }
+    requestCurrentLocation(false);
   };
 
-  const fetchNearbyOffices = async (currentLoc) => {
-    try {
-      let data = await officeService.getNearbyCenters(currentLoc.lat, currentLoc.lng, 50.0);
-      if (!data || data.length === 0) {
-        data = await officeService.getAllOffices();
-      }
-      setOffices(data || []);
-      if (!data || data.length === 0) {
-        setLocationError('No collection offices currently available. Please contact support.');
-      } else {
-        setLocationError(null);
-      }
-    } catch (error) {
-      console.warn('Nearby offices failed, trying all offices:', error);
-      try {
-        const allOffices = await officeService.getAllOffices();
-        if (allOffices && allOffices.length > 0) {
-          setOffices(allOffices);
-          setLocationError(null);
-          return;
-        }
-      } catch (err2) {
-        console.error('Failed to load all offices:', err2);
-      }
-      setLocationError('Unable to fetch collection offices. Please verify the backend is running.');
-    } finally {
-      setMapLoading(false);
-    }
-  };
-
-  const handleSelectCollector = (office) => {
+  const handleSelectOffice = (office) => {
     setSelectedOffice(office);
     setShowMapModal(false);
+  };
+
+  const handleMapPinChange = (newCoords) => {
+    setUserCoords(newCoords);
+    setFormData((prev) => ({
+      ...prev,
+      userLocation: `Pickup Coordinates: ${newCoords.lat.toFixed(5)}, ${newCoords.lng.toFixed(5)}`
+    }));
+    loadOffices(newCoords, false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedOffice) {
-      setError('Please choose a collection office before submitting.');
+      setError('Please select an authorized collection office on the map before submitting.');
       return;
     }
 
@@ -181,23 +187,24 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
     data.append('officeId', selectedOffice.id || selectedOffice.officeId);
     data.append('deviceName', formData.deviceName);
     data.append('deviceCategory', formData.deviceCategory);
-    data.append('brand', formData.brand);
-    data.append('model', formData.model);
+    data.append('brand', formData.brand || '');
+    data.append('model', formData.model || '');
     data.append('quantity', formData.quantity);
     data.append('description', formData.description);
     if (formData.approximateWeight) data.append('approximateWeight', formData.approximateWeight);
     if (formData.userLocation) data.append('userLocation', formData.userLocation);
     data.append('file', file);
-    if (location) {
-      data.append('latitude', location.lat);
-      data.append('longitude', location.lng);
+    if (userCoords) {
+      data.append('latitude', userCoords.lat);
+      data.append('longitude', userCoords.lng);
     }
 
     try {
       await pickupRequestService.createRequest(data);
       if (onSuccess) onSuccess();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit pickup request. Please try again.');
+      console.error('Request submission failed:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to submit pickup request. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -210,7 +217,7 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
           <span className="gc-form-badge">E-Waste Submission</span>
           <h2 className="gc-form-heading">Request Responsible E-Waste Recycling</h2>
           <p className="gc-form-subheading">
-            Submit your electronic devices for safe pickup, verified recycling, and earn Green Rewards.
+            Submit your electronic devices for verified pickup, certified eco-recycling, and earn Green Points.
           </p>
         </div>
       </div>
@@ -232,7 +239,7 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
                 type="text"
                 className="gc-input-field"
                 name="deviceName"
-                placeholder="e.g. MacBook Pro 15, iPhone 11, Dell Monitor"
+                placeholder="e.g. Dell Inspiron 15, iPhone 12, Smart TV, Tablet"
                 value={formData.deviceName}
                 onChange={handleChange}
                 required
@@ -277,7 +284,7 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
                   type="text"
                   className="gc-input-field"
                   name="brand"
-                  placeholder="e.g. Apple, Samsung, HP"
+                  placeholder="e.g. Apple, Lenovo, Samsung, HP"
                   value={formData.brand}
                   onChange={handleChange}
                 />
@@ -289,7 +296,7 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
                   type="text"
                   className="gc-input-field"
                   name="model"
-                  placeholder="e.g. A1990, Galaxy S10"
+                  placeholder="e.g. A2179, Pavilion 14"
                   value={formData.model}
                   onChange={handleChange}
                 />
@@ -316,7 +323,7 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
                 rows="3"
                 className="gc-input-field"
                 name="description"
-                placeholder="Describe condition: battery swollen, screen cracked, doesn't turn on, etc."
+                placeholder="Describe condition: dead motherboard, broken screen, swollen battery, working but obsolete, etc."
                 value={formData.description}
                 onChange={handleChange}
                 required
@@ -324,12 +331,12 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
             </div>
 
             <div className="gc-field-group">
-              <label className="gc-input-label">Your Pickup Address / Location</label>
+              <label className="gc-input-label">Your Pickup Address / Landmark</label>
               <input
                 type="text"
                 className="gc-input-field"
                 name="userLocation"
-                placeholder="Enter street, apartment, landmark, or let GPS detect"
+                placeholder="Enter street, apartment, landmark, or set via GPS pin"
                 value={formData.userLocation}
                 onChange={handleChange}
               />
@@ -338,7 +345,7 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
 
           {/* Right Column: Photo Upload Drag-and-Drop */}
           <div className="gc-form-col">
-            <label className="gc-input-label">Device Photo * (JPG, PNG, WEBP)</label>
+            <label className="gc-input-label">Device Verification Photo * (JPG, PNG, WEBP)</label>
 
             <div
               className={`gc-upload-zone ${isDragging ? 'dragging' : ''} ${imagePreview ? 'has-image' : ''}`}
@@ -391,12 +398,12 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
                 type="button"
                 className="gc-btn-primary"
                 style={{ width: '100%', padding: '14px 20px', fontSize: '1rem' }}
-                onClick={handleFindCollectors}
+                onClick={handleOpenMapModal}
               >
-                <span>📍 Choose Collection Office & Map</span>
+                <span>📍 Choose Collection Office on Live Map</span>
               </button>
               <p className="gc-hint-text">
-                Next step: Select an authorized recycling center nearest to your pickup location.
+                Next step: Pinpoint your pickup coordinates and select an authorized Coimbatore center.
               </p>
             </div>
           </div>
@@ -407,12 +414,12 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
           <div className="gc-glass-card gc-confirm-card">
             <div className="gc-confirm-header">
               <div>
-                <span className="gc-chip gc-chip-collected">Collector Selected</span>
+                <span className="gc-chip gc-chip-collected">Authorized Center Selected</span>
                 <h3 className="gc-confirm-title">
                   {selectedOffice.officeName || selectedOffice.name}
                 </h3>
                 <p className="gc-confirm-subtitle">
-                  📍 {selectedOffice.area || selectedOffice.city || selectedOffice.address}
+                  📍 {selectedOffice.address}
                   {selectedOffice.phoneNumber && ` • 📞 ${selectedOffice.phoneNumber}`}
                 </p>
               </div>
@@ -437,14 +444,14 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
                 </div>
                 <div className="gc-summary-row">
                   <span className="gc-summary-label">Quantity & Weight</span>
-                  <span className="gc-summary-value">{formData.quantity} item(s) {formData.approximateWeight ? `• ~${formData.approximateWeight} kg` : ''}</span>
+                  <span className="gc-summary-value">{formData.quantity} unit(s) {formData.approximateWeight ? `• ~${formData.approximateWeight} kg` : ''}</span>
                 </div>
                 <div className="gc-summary-row">
                   <span className="gc-summary-label">Pickup Address</span>
-                  <span className="gc-summary-value">{formData.userLocation || 'Location marked on map'}</span>
+                  <span className="gc-summary-value">{formData.userLocation || `Coordinates: ${userCoords.lat.toFixed(4)}, ${userCoords.lng.toFixed(4)}`}</span>
                 </div>
                 <div className="gc-summary-row">
-                  <span className="gc-summary-label">Description</span>
+                  <span className="gc-summary-label">Condition</span>
                   <span className="gc-summary-value">{formData.description}</span>
                 </div>
               </div>
@@ -472,7 +479,7 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
                 className="gc-btn-primary"
                 onClick={handleSubmit}
                 disabled={loading}
-                style={{ minWidth: '220px' }}
+                style={{ minWidth: '240px' }}
               >
                 {loading ? 'Submitting Request…' : '🚀 Confirm & Submit Request'}
               </button>
@@ -487,9 +494,9 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
           <div className="gc-modal-window gc-map-modal" onClick={(e) => e.stopPropagation()}>
             <div className="gc-modal-header">
               <div>
-                <h3 className="gc-modal-title">Select Nearby Collection Center</h3>
+                <h3 className="gc-modal-title">Select Nearby Authorized Center</h3>
                 <p className="gc-modal-subtitle">
-                  Choose the facility that will collect and responsibly process your e-waste.
+                  Verify your pickup location and choose a certified Coimbatore facility.
                 </p>
               </div>
               <button
@@ -502,34 +509,72 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
             </div>
 
             <div className="gc-modal-body">
-              {locationError && (
-                <div className="gc-form-error-banner" style={{ marginBottom: '16px' }}>
-                  <span>⚠️ {locationError}</span>
-                  <button
-                    type="button"
-                    className="gc-btn-secondary"
-                    style={{ padding: '4px 10px', fontSize: '0.78rem', marginLeft: '12px' }}
-                    onClick={handleFindCollectors}
-                  >
-                    Retry
-                  </button>
+              {/* GPS status and refresh controls */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: 'rgba(0, 230, 118, 0.08)',
+                border: '1px solid rgba(0, 230, 118, 0.2)',
+                borderRadius: '12px',
+                padding: '10px 16px',
+                marginBottom: '16px',
+                flexWrap: 'wrap',
+                gap: '10px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '18px' }}>{gpsActive ? '🛰️' : '📍'}</span>
+                  <div>
+                    <strong style={{ fontSize: '0.85rem', color: '#00ff88', display: 'block' }}>
+                      {gpsActive ? 'Real GPS Location Active' : 'Pickup Coordinate Selection'}
+                    </strong>
+                    <span style={{ fontSize: '0.78rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                      {locationStatus || 'Click anywhere on map to reposition your pickup pin'}
+                    </span>
+                  </div>
                 </div>
-              )}
+
+                <button
+                  type="button"
+                  className="gc-btn-secondary"
+                  style={{ padding: '6px 14px', fontSize: '0.8rem' }}
+                  onClick={() => requestCurrentLocation(false)}
+                >
+                  🔄 Recalibrate GPS
+                </button>
+              </div>
 
               {mapLoading ? (
                 <div className="gc-map-loading">
                   <div className="gc-spinner" />
-                  <span>Discovering nearest authorized collectors…</span>
+                  <span>Discovering authorized Coimbatore facilities…</span>
                 </div>
               ) : (
                 <>
+                  {/* Interactive Map View */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <InteractiveMap
+                      userLocation={userCoords}
+                      offices={offices}
+                      selectedOffice={selectedOffice}
+                      onSelectOffice={handleSelectOffice}
+                      onLocationChange={handleMapPinChange}
+                      allowLocationPick={true}
+                      height="340px"
+                      showRoute={true}
+                    />
+                  </div>
+
                   {/* Office Cards List */}
+                  <h4 style={{ color: '#ffffff', fontSize: '0.95rem', margin: '0 0 12px 0' }}>
+                    Available Authorized Centers ({offices.length})
+                  </h4>
                   <div className="gc-offices-grid">
                     {offices.map((office) => (
                       <div
                         key={office.id || office.officeId}
-                        className={`gc-office-card ${selectedMarker?.id === office.id ? 'active' : ''}`}
-                        onClick={() => setSelectedMarker(office)}
+                        className={`gc-office-card ${selectedOffice?.id === office.id ? 'active' : ''}`}
+                        onClick={() => handleSelectOffice(office)}
                       >
                         <div className="gc-office-top">
                           <span className="gc-office-icon">♻️</span>
@@ -550,98 +595,14 @@ const PickupRequestForm = ({ onSuccess, onCancel }) => {
                           className="gc-btn-primary gc-office-select-btn"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleSelectCollector(office);
+                            handleSelectOffice(office);
                           }}
                         >
-                          Select Office
+                          Select This Center
                         </button>
                       </div>
                     ))}
                   </div>
-
-                  {/* Google Map View */}
-                  {isLoaded && (
-                    <div className="gc-map-view-container">
-                      <GoogleMap
-                        mapContainerStyle={mapContainerStyle}
-                        center={location || centerDefault}
-                        zoom={location ? 12 : 11}
-                        options={{
-                          styles: [
-                            { elementType: 'geometry', stylers: [{ color: '#0f2419' }] },
-                            { elementType: 'labels.text.stroke', stylers: [{ color: '#091811' }] },
-                            { elementType: 'labels.text.fill', stylers: [{ color: '#749882' }] },
-                            { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#00e676' }] },
-                            { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1a3c2b' }] },
-                            { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#051b14' }] }
-                          ]
-                        }}
-                      >
-                        {/* User Location Marker */}
-                        {location && (
-                          <Marker
-                            position={location}
-                            title="Your Location"
-                            icon={{
-                              url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
-                            }}
-                          />
-                        )}
-
-                        {/* Office Markers */}
-                        {offices.map((office) => (
-                          <Marker
-                            key={office.id || office.officeId}
-                            position={{ lat: office.latitude, lng: office.longitude }}
-                            title={office.officeName || office.name}
-                            icon={{
-                              url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
-                            }}
-                            onClick={() => setSelectedMarker(office)}
-                          />
-                        ))}
-
-                        {/* Info Window */}
-                        {selectedMarker && (
-                          <InfoWindow
-                            position={{ lat: selectedMarker.latitude, lng: selectedMarker.longitude }}
-                            onCloseClick={() => setSelectedMarker(null)}
-                          >
-                            <div className="gc-map-infowindow">
-                              <h5 style={{ margin: '0 0 4px', color: '#00c967' }}>
-                                {selectedMarker.officeName || selectedMarker.name}
-                              </h5>
-                              <p style={{ margin: '0 0 6px', fontSize: '0.8rem', color: '#333' }}>
-                                {selectedMarker.address}
-                              </p>
-                              {selectedMarker.distanceKm && (
-                                <p style={{ margin: '0 0 6px', fontSize: '0.78rem', color: '#666' }}>
-                                  Distance: {selectedMarker.distanceKm} km
-                                </p>
-                              )}
-                              <button
-                                type="button"
-                                style={{
-                                  background: '#00c967',
-                                  color: '#fff',
-                                  border: 'none',
-                                  borderRadius: '6px',
-                                  padding: '6px 12px',
-                                  fontSize: '0.8rem',
-                                  cursor: 'pointer',
-                                  fontWeight: 600,
-                                  width: '100%'
-                                }}
-                                onClick={() => handleSelectCollector(selectedMarker)}
-                              >
-                                Choose This Center
-                              </button>
-                            </div>
-                          </InfoWindow>
-                        )}
-                      </GoogleMap>
-                    </div>
-                  )}
                 </>
               )}
             </div>
