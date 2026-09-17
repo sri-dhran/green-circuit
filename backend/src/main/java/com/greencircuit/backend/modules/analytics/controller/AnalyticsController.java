@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
+import org.springframework.web.bind.annotation.RequestParam;
+
 @RestController
-@RequestMapping("/api/analytics")
+@RequestMapping({"/api/analytics", "/api/admin/analytics"})
 public class AnalyticsController {
     private final AnalyticsService analyticsService;
 
@@ -19,7 +21,9 @@ public class AnalyticsController {
 
     @GetMapping
     @PreAuthorize("hasRole('SUPER_ADMIN') and authentication.name == 'sri741815@gmail.com'")
-    public ResponseEntity<Map<String, Object>> getStats() {
-        return ResponseEntity.ok(analyticsService.getDashboardStats());
+    public ResponseEntity<Map<String, Object>> getStats(
+            @RequestParam(value = "period", required = false, defaultValue = "all") String period
+    ) {
+        return ResponseEntity.ok(analyticsService.getDashboardStats(period));
     }
 }
