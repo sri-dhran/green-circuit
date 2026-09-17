@@ -61,10 +61,11 @@ public class UserDataSeeder {
                 seedOfficeStaff(userRepository, passwordEncoder, offices, "Dharani", "dharani@greencircuit.com", "Dharani Processing Head");
                 seedOfficeStaff(userRepository, passwordEncoder, offices, "Eco Birbals", "ecobirbals@greencircuit.com", "Eco Birbals Hub Manager");
 
-                // Seed Collection Agents
-                seedCollectionAgent(userRepository, agentRepository, passwordEncoder, offices, "Techazar", "agent.techazar@greencircuit.com", "Arun Kumar", "+91 9876543210", "TEC-A001");
-                seedCollectionAgent(userRepository, agentRepository, passwordEncoder, offices, "Green Era", "agent.greenera@greencircuit.com", "Karthik Raja", "+91 9845123456", "GRE-A001");
-                seedCollectionAgent(userRepository, agentRepository, passwordEncoder, offices, "Adhira", "agent.adhira@greencircuit.com", "Suresh Raina", "+91 9789012345", "ADH-A001");
+                // Seed Collection Agents (Exclusive primary agent: ff2367211871@gmail.com / Sri@1234)
+                seedCollectionAgent(userRepository, agentRepository, passwordEncoder, offices, "Techazar", "ff2367211871@gmail.com", "Primary Collection Agent", "+91 9876543210", "AGT-001", "Sri@1234");
+                seedCollectionAgent(userRepository, agentRepository, passwordEncoder, offices, "Techazar", "agent.techazar@greencircuit.com", "Arun Kumar", "+91 9876543210", "TEC-A001", "password123");
+                seedCollectionAgent(userRepository, agentRepository, passwordEncoder, offices, "Green Era", "agent.greenera@greencircuit.com", "Karthik Raja", "+91 9845123456", "GRE-A001", "password123");
+                seedCollectionAgent(userRepository, agentRepository, passwordEncoder, offices, "Adhira", "agent.adhira@greencircuit.com", "Suresh Raina", "+91 9789012345", "ADH-A001", "password123");
             }
         };
     }
@@ -78,7 +79,8 @@ public class UserDataSeeder {
             String email,
             String fullName,
             String mobile,
-            String empId
+            String empId,
+            String rawPassword
     ) {
         Office targetOffice = offices.stream()
                 .filter(o -> o.getOfficeName() != null && o.getOfficeName().toLowerCase().contains(officeKeyword.toLowerCase()))
@@ -89,7 +91,7 @@ public class UserDataSeeder {
             User agentUser = userRepository.findByEmail(email).orElse(new User());
             agentUser.setName(fullName);
             agentUser.setEmail(email);
-            agentUser.setPassword(passwordEncoder.encode("password123"));
+            agentUser.setPassword(passwordEncoder.encode(rawPassword));
             agentUser.setRole(Role.AGENT);
             agentUser.setPhoneNumber(mobile);
             agentUser.setOffice(targetOffice);
