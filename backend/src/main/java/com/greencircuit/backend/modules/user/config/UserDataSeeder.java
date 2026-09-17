@@ -34,14 +34,17 @@ public class UserDataSeeder {
             userRepository.save(user);
             System.out.println("Seeded/updated demo user: user@greencircuit.com");
 
-            // Seed Super Admin
-            User admin = userRepository.findByEmail("admin@greencircuit.com").orElse(new User());
-            admin.setName("Global Administrator");
-            admin.setEmail("admin@greencircuit.com");
-            admin.setPassword(passwordEncoder.encode("password123"));
+            // Seed Super Admin (Exclusively sri741815@gmail.com)
+            User admin = userRepository.findByEmail("sri741815@gmail.com").orElse(new User());
+            admin.setName("Super Admin");
+            admin.setEmail("sri741815@gmail.com");
+            admin.setPassword(passwordEncoder.encode("Sri@1234"));
             admin.setRole(Role.SUPER_ADMIN);
             userRepository.save(admin);
-            System.out.println("Seeded/updated admin user: admin@greencircuit.com");
+            System.out.println("Seeded/updated super admin user: sri741815@gmail.com");
+
+            // Clean up legacy admin demo account if it exists
+            userRepository.findByEmail("admin@greencircuit.com").ifPresent(userRepository::delete);
 
             // Seed Office users linked to specific collection centers
             List<Office> offices = officeRepository.findAll();

@@ -25,13 +25,13 @@ public class AnalyticsService {
         var allRequests = requestRepository.findAll();
         
         long completed = allRequests.stream()
-                .filter(r -> r.getStatus() == RequestStatus.COLLECTED || r.getStatus() == RequestStatus.RECYCLED)
+                .filter(r -> r.getStatus() == RequestStatus.COLLECTED || r.getStatus() == RequestStatus.RECYCLED || r.getStatus() == RequestStatus.COMPLETED)
                 .count();
         stats.put("completedPickups", completed);
         
         long totalItems = allRequests.stream()
-                .filter(r -> r.getStatus() == RequestStatus.COLLECTED || r.getStatus() == RequestStatus.RECYCLED)
-                .mapToLong(r -> r.getQuantity())
+                .filter(r -> r.getStatus() == RequestStatus.COLLECTED || r.getStatus() == RequestStatus.RECYCLED || r.getStatus() == RequestStatus.COMPLETED)
+                .mapToLong(r -> r.getQuantity() != null ? r.getQuantity() : 0)
                 .sum();
         stats.put("totalEwasteItemsCollected", totalItems);
         return stats;

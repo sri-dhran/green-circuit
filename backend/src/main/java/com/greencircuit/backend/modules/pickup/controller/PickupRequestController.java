@@ -38,18 +38,12 @@ public class PickupRequestController {
             @RequestParam(value = "longitude", required = false) Double longitude,
             @RequestParam(value = "userLocation", required = false) String userLocation,
             @RequestParam(value = "file", required = false) MultipartFile file
-    ) {
-        try {
-            String email = authentication.getName();
-            PickupRequest request = pickupRequestService.createRequest(
-                    email, officeId, deviceName, deviceCategory, brand, model, quantity, 
-                    description, approximateWeight, latitude, longitude, userLocation, file);
-            return ResponseEntity.ok(request);
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body("File upload failed");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    ) throws IOException {
+        String email = authentication.getName();
+        PickupRequest request = pickupRequestService.createRequest(
+                email, officeId, deviceName, deviceCategory, brand, model, quantity, 
+                description, approximateWeight, latitude, longitude, userLocation, file);
+        return ResponseEntity.ok(request);
     }
 
     @GetMapping("/user")
@@ -77,74 +71,54 @@ public class PickupRequestController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getRequestById(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<PickupRequest> getRequestById(@PathVariable Long id, Authentication authentication) {
         String email = authentication.getName();
-        try {
-            return ResponseEntity.ok(pickupRequestService.getRequestById(id, email));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        return ResponseEntity.ok(pickupRequestService.getRequestById(id, email));
     }
 
     @PatchMapping("/{id}/accept")
-    public ResponseEntity<?> acceptRequest(
+    public ResponseEntity<PickupRequest> acceptRequest(
             @PathVariable Long id,
             @RequestParam(value = "response", required = false) String response,
             Authentication authentication
     ) {
-        try {
-            String email = authentication.getName();
-            return ResponseEntity.ok(pickupRequestService.acceptRequest(id, response, email));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        String email = authentication.getName();
+        return ResponseEntity.ok(pickupRequestService.acceptRequest(id, response, email));
     }
 
     @PatchMapping("/{id}/reject")
-    public ResponseEntity<?> rejectRequest(
+    public ResponseEntity<PickupRequest> rejectRequest(
             @PathVariable Long id,
             @RequestParam(value = "response", required = false) String response,
             Authentication authentication
     ) {
-        try {
-            String email = authentication.getName();
-            return ResponseEntity.ok(pickupRequestService.rejectRequest(id, response, email));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        String email = authentication.getName();
+        return ResponseEntity.ok(pickupRequestService.rejectRequest(id, response, email));
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(
+    public ResponseEntity<PickupRequest> updateStatus(
             @PathVariable Long id,
             @RequestParam("status") String status,
             Authentication authentication
     ) {
-        try {
-            String email = authentication.getName();
-            return ResponseEntity.ok(pickupRequestService.updateRequestStatus(id, status, null, email));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        String email = authentication.getName();
+        return ResponseEntity.ok(pickupRequestService.updateRequestStatus(id, status, null, email));
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateStatusOld(
+    public ResponseEntity<PickupRequest> updateStatusOld(
             @PathVariable Long id,
             @RequestParam("status") String status,
             @RequestParam(value = "rejectionReason", required = false) String rejectionReason,
             Authentication authentication
     ) {
-        try {
-            String email = authentication.getName();
-            return ResponseEntity.ok(pickupRequestService.updateRequestStatus(id, status, rejectionReason, email));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        String email = authentication.getName();
+        return ResponseEntity.ok(pickupRequestService.updateRequestStatus(id, status, rejectionReason, email));
     }
 
     @PutMapping("/{id}/assign-collector")
-    public ResponseEntity<?> assignCollector(
+    public ResponseEntity<PickupRequest> assignCollector(
             @PathVariable Long id,
             @RequestParam("collectorName") String collectorName,
             @RequestParam("collectorPhone") String collectorPhone,
@@ -152,11 +126,7 @@ public class PickupRequestController {
             @RequestParam("pickupTime") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime pickupTime,
             Authentication authentication
     ) {
-        try {
-            String email = authentication.getName();
-            return ResponseEntity.ok(pickupRequestService.assignCollector(id, collectorName, collectorPhone, pickupDate, pickupTime, email));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        String email = authentication.getName();
+        return ResponseEntity.ok(pickupRequestService.assignCollector(id, collectorName, collectorPhone, pickupDate, pickupTime, email));
     }
 }

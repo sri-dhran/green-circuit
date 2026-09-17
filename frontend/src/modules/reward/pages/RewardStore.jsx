@@ -166,7 +166,6 @@ const RewardStore = () => {
                               src={reward.imageUrl}
                               alt={reward.name}
                               className="gc-reward-img"
-                              crossOrigin="anonymous"
                               onError={(e) => { e.target.style.display = 'none'; }}
                             />
                           </div>

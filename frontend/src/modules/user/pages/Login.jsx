@@ -131,10 +131,10 @@ const Login = () => {
             // Success animation then navigate
             setBtnState('success');
             setTimeout(() => {
-                if (userData.role === 'OFFICE') {
-                    navigate('/dashboard');
-                } else if (userData.role === 'SUPER_ADMIN') {
+                if (userData.role === 'SUPER_ADMIN' && userData.email?.toLowerCase() === 'sri741815@gmail.com') {
                     navigate('/admin');
+                } else if (userData.role === 'OFFICE') {
+                    navigate('/dashboard');
                 } else {
                     navigate('/user-dashboard');
                 }

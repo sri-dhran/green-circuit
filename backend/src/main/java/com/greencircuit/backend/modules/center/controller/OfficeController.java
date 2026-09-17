@@ -20,19 +20,19 @@ public class OfficeController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('OFFICE') or hasRole('USER')")
+    @PreAuthorize("hasAnyRole('OFFICE', 'SUPER_ADMIN', 'USER')")
     public ResponseEntity<OfficeDTO> createOffice(@Valid @RequestBody OfficeDTO officeDTO) {
         return ResponseEntity.ok(officeService.createOffice(officeDTO));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('OFFICE') or hasRole('USER')")
+    @PreAuthorize("hasAnyRole('OFFICE', 'SUPER_ADMIN', 'USER')")
     public ResponseEntity<OfficeDTO> updateOffice(@PathVariable Long id, @Valid @RequestBody OfficeDTO officeDTO) {
         return ResponseEntity.ok(officeService.updateOffice(id, officeDTO));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('OFFICE') or hasRole('USER')")
+    @PreAuthorize("hasAnyRole('OFFICE', 'SUPER_ADMIN', 'USER')")
     public ResponseEntity<Void> deleteOffice(@PathVariable Long id) {
         officeService.deleteOffice(id);
         return ResponseEntity.noContent().build();

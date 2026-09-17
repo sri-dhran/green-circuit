@@ -62,9 +62,11 @@ public class PickupRequestService {
 
         String photoPath = null;
         if (file != null && !file.isEmpty()) {
-            // Validation can go here (type, size)
             String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".")) : ".jpg";
+            String extension = ".jpg";
+            if (originalFilename != null && originalFilename.lastIndexOf(".") != -1) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
             String newFilename = UUID.randomUUID().toString() + extension;
             Path filePath = Paths.get(UPLOAD_DIR, newFilename);
             Files.copy(file.getInputStream(), filePath);
@@ -114,6 +116,7 @@ public class PickupRequestService {
 
         // Validate access
         if (!request.getUser().getId().equals(user.getId()) && 
+            user.getRole() != com.greencircuit.backend.modules.user.entity.Role.SUPER_ADMIN &&
             (user.getOffice() == null || !request.getOffice().getId().equals(user.getOffice().getId()))) {
             throw new IllegalArgumentException("Unauthorized to view this request");
         }
@@ -219,12 +222,16 @@ public class PickupRequestService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         
-        if (user.getOffice() == null) {
-            throw new IllegalArgumentException("User is not a collector");
-        }
-
         PickupRequest request = pickupRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Request not found"));
+
+        if (user.getRole() == com.greencircuit.backend.modules.user.entity.Role.SUPER_ADMIN) {
+            return request;
+        }
+
+        if (user.getOffice() == null) {
+            throw new IllegalArgumentException("User is not assigned to a collection center");
+        }
         
         if (!request.getOffice().getId().equals(user.getOffice().getId())) {
             throw new IllegalArgumentException("Unauthorized to modify this request");

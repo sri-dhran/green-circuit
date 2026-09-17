@@ -67,8 +67,8 @@ const GlassNavbar = ({ activeTab, onTabChange }) => {
       <nav className="gc-navbar">
         {/* Brand Area */}
         <div className="gc-nav-brand" onClick={() => {
-          if (user.role === 'OFFICE') navigate('/dashboard');
-          else if (user.role === 'SUPER_ADMIN') navigate('/admin');
+          if (user.role === 'SUPER_ADMIN' && user.email?.toLowerCase() === 'sri741815@gmail.com') navigate('/admin');
+          else if (user.role === 'OFFICE') navigate('/dashboard');
           else navigate('/user-dashboard');
         }}>
           <div className="gc-nav-logo-icon">♻</div>
@@ -108,7 +108,7 @@ const GlassNavbar = ({ activeTab, onTabChange }) => {
             </>
           )}
 
-          {user.role === 'SUPER_ADMIN' && (
+          {user.role === 'SUPER_ADMIN' && user.email?.toLowerCase() === 'sri741815@gmail.com' && (
             <>
               <button
                 className={`gc-nav-link ${location.pathname === '/admin' ? 'active' : ''}`}
@@ -275,7 +275,7 @@ const GlassNavbar = ({ activeTab, onTabChange }) => {
               </button>
             )}
 
-            {user.role === 'SUPER_ADMIN' && (
+            {user.role === 'SUPER_ADMIN' && user.email?.toLowerCase() === 'sri741815@gmail.com' && (
               <>
                 <button
                   className="gc-mobile-link"

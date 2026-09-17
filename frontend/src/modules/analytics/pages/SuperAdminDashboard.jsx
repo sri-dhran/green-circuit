@@ -15,8 +15,13 @@ const SuperAdminDashboard = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (user && (user.role !== 'SUPER_ADMIN' || user.email?.toLowerCase() !== 'sri741815@gmail.com')) {
+      if (user.role === 'OFFICE') navigate('/dashboard');
+      else navigate('/user-dashboard');
+      return;
+    }
     fetchStats();
-  }, []);
+  }, [user]);
 
   const fetchStats = async () => {
     try {
@@ -29,7 +34,7 @@ const SuperAdminDashboard = () => {
     }
   };
 
-  if (!user) return null;
+  if (!user || user.role !== 'SUPER_ADMIN' || user.email?.toLowerCase() !== 'sri741815@gmail.com') return null;
 
   return (
     <div className="gc-admin-root">

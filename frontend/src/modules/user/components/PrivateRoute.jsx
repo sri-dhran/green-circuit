@@ -3,6 +3,8 @@ import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { CircularProgress, Box } from '@mui/material';
 
+const SUPER_ADMIN_EMAIL = 'sri741815@gmail.com';
+
 const PrivateRoute = ({ children, requiredRole }) => {
     const { user, loading } = useContext(AuthContext);
 
@@ -18,8 +20,18 @@ const PrivateRoute = ({ children, requiredRole }) => {
         return <Navigate to="/login" replace />;
     }
 
-    // SUPER_ADMIN can access all protected routes for administrative oversight
-    if (requiredRole && user.role !== requiredRole && user.role !== 'SUPER_ADMIN') {
+    const isAuthorizedSuperAdmin = user.role === 'SUPER_ADMIN' && user.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
+
+    // Super admin page is strictly restricted to sri741815@gmail.com
+    if (requiredRole === 'SUPER_ADMIN' && !isAuthorizedSuperAdmin) {
+        if (user.role === 'OFFICE') {
+            return <Navigate to="/dashboard" replace />;
+        } else {
+            return <Navigate to="/user-dashboard" replace />;
+        }
+    }
+
+    if (requiredRole && requiredRole !== 'SUPER_ADMIN' && user.role !== requiredRole && !isAuthorizedSuperAdmin) {
         if (user.role === 'OFFICE') {
             return <Navigate to="/dashboard" replace />;
         } else {

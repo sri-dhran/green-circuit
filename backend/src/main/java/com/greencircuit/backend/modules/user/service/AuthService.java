@@ -43,6 +43,10 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid role specified");
         }
 
+        if (role == Role.SUPER_ADMIN && !"sri741815@gmail.com".equalsIgnoreCase(request.getEmail().trim())) {
+            throw new IllegalArgumentException("Unauthorized role: Super Admin access is restricted to authorized accounts.");
+        }
+
         User user = new User(
                 request.getName(),
                 request.getEmail(),
