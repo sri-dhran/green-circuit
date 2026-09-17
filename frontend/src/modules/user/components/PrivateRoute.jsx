@@ -34,6 +34,8 @@ const PrivateRoute = ({ children, requiredRole }) => {
     if (requiredRole && requiredRole !== 'SUPER_ADMIN' && user.role !== requiredRole && !isAuthorizedSuperAdmin) {
         if (user.role === 'OFFICE') {
             return <Navigate to="/dashboard" replace />;
+        } else if (user.role === 'AGENT') {
+            return <Navigate to="/agent/dashboard" replace />;
         } else {
             return <Navigate to="/user-dashboard" replace />;
         }

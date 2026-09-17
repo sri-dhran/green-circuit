@@ -135,6 +135,8 @@ const Login = () => {
                     navigate('/admin');
                 } else if (userData.role === 'OFFICE') {
                     navigate('/dashboard');
+                } else if (userData.role === 'AGENT') {
+                    navigate('/agent/dashboard');
                 } else {
                     navigate('/user-dashboard');
                 }

@@ -60,6 +60,22 @@ public class PickupRequest {
     private LocalDate pickupDate;
     private LocalTime pickupTime;
 
+    @ManyToOne
+    @JoinColumn(name = "agent_id")
+    private com.greencircuit.backend.modules.agent.entity.CollectionAgent agent;
+
+    @ManyToOne
+    @JoinColumn(name = "assigned_by_office_id")
+    private Office assignedByOffice;
+
+    private LocalDateTime assignedAt;
+
+    @Column(columnDefinition = "TEXT")
+    private String agentRemarks;
+
+    @Column(name = "pickup_proof_url")
+    private String pickupProofUrl;
+
     @Convert(converter = RequestStatusConverter.class)
     @Column(nullable = false)
     private RequestStatus status = RequestStatus.PENDING;
@@ -174,4 +190,19 @@ public class PickupRequest {
 
     public LocalDateTime getCompletedAt() { return completedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+
+    public com.greencircuit.backend.modules.agent.entity.CollectionAgent getAgent() { return agent; }
+    public void setAgent(com.greencircuit.backend.modules.agent.entity.CollectionAgent agent) { this.agent = agent; }
+
+    public Office getAssignedByOffice() { return assignedByOffice; }
+    public void setAssignedByOffice(Office assignedByOffice) { this.assignedByOffice = assignedByOffice; }
+
+    public LocalDateTime getAssignedAt() { return assignedAt; }
+    public void setAssignedAt(LocalDateTime assignedAt) { this.assignedAt = assignedAt; }
+
+    public String getAgentRemarks() { return agentRemarks; }
+    public void setAgentRemarks(String agentRemarks) { this.agentRemarks = agentRemarks; }
+
+    public String getPickupProofUrl() { return pickupProofUrl; }
+    public void setPickupProofUrl(String pickupProofUrl) { this.pickupProofUrl = pickupProofUrl; }
 }

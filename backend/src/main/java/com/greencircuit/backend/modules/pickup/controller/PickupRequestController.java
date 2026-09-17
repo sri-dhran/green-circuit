@@ -129,4 +129,16 @@ public class PickupRequestController {
         String email = authentication.getName();
         return ResponseEntity.ok(pickupRequestService.assignCollector(id, collectorName, collectorPhone, pickupDate, pickupTime, email));
     }
+
+    @PutMapping("/{id}/assign-agent")
+    public ResponseEntity<PickupRequest> assignAgent(
+            @PathVariable Long id,
+            @RequestParam("agentId") Long agentId,
+            @RequestParam(value = "pickupDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate pickupDate,
+            @RequestParam(value = "pickupTime", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime pickupTime,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(pickupRequestService.assignAgent(id, agentId, pickupDate, pickupTime, email));
+    }
 }

@@ -46,5 +46,12 @@ export const pickupRequestService = {
             params: { collectorName, collectorPhone, pickupDate, pickupTime }
         });
         return response.data;
+    },
+
+    assignAgent: async (id, agentId, pickupDate, pickupTime) => {
+        const response = await api.put(`/pickup-requests/${id}/assign-agent`, null, {
+            params: { agentId, pickupDate, pickupTime }
+        });
+        return response.data;
     }
 };

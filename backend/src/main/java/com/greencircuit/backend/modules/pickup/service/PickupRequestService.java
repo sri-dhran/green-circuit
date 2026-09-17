@@ -31,15 +31,24 @@ public class PickupRequestService {
     private final OfficeRepository officeRepository;
     private final NotificationRepository notificationRepository;
     private final EmailService emailService;
+    private final com.greencircuit.backend.modules.agent.repository.CollectionAgentRepository agentRepository;
 
     private final String UPLOAD_DIR = "uploads/";
 
-    public PickupRequestService(PickupRequestRepository pickupRequestRepository, UserRepository userRepository, OfficeRepository officeRepository, NotificationRepository notificationRepository, EmailService emailService) {
+    public PickupRequestService(
+            PickupRequestRepository pickupRequestRepository,
+            UserRepository userRepository,
+            OfficeRepository officeRepository,
+            NotificationRepository notificationRepository,
+            EmailService emailService,
+            com.greencircuit.backend.modules.agent.repository.CollectionAgentRepository agentRepository
+    ) {
         this.pickupRequestRepository = pickupRequestRepository;
         this.userRepository = userRepository;
         this.officeRepository = officeRepository;
         this.notificationRepository = notificationRepository;
         this.emailService = emailService;
+        this.agentRepository = agentRepository;
         
         // Ensure upload directory exists
         try {
@@ -199,6 +208,45 @@ public class PickupRequestService {
         return saved;
     }
 
+    public PickupRequest assignAgent(Long requestId, Long agentId, LocalDate date, LocalTime time, String officeEmail) {
+        PickupRequest request = getAndValidateCollectorAccess(requestId, officeEmail);
+        
+        com.greencircuit.backend.modules.agent.entity.CollectionAgent agent = agentRepository.findById(agentId)
+                .orElseThrow(() -> new IllegalArgumentException("Collection agent not found"));
+
+        if (!agent.getOffice().getId().equals(request.getOffice().getId())) {
+            throw new IllegalArgumentException("Selected collection agent belongs to a different office");
+        }
+
+        request.setAgent(agent);
+        request.setCollectorName(agent.getFullName());
+        request.setCollectorPhoneNumber(agent.getMobileNumber());
+        request.setPickupDate(date != null ? date : LocalDate.now());
+        request.setPickupTime(time != null ? time : LocalTime.of(10, 0));
+        request.setAssignedAt(LocalDateTime.now());
+        request.setAssignedByOffice(request.getOffice());
+        request.setStatus(RequestStatus.PICKUP_SCHEDULED);
+
+        PickupRequest updated = pickupRequestRepository.save(request);
+
+        // Notify User
+        String userMsg = String.format("Collection agent %s (%s) from %s has been assigned for your e-waste pickup (REQ-%d) scheduled for %s at %s.",
+                agent.getFullName(), agent.getMobileNumber(), request.getOffice().getOfficeName(), request.getId(), request.getPickupDate(), request.getPickupTime());
+        createAndSendNotification(request.getUser(), userMsg, "Green Circuit - Collection Agent Assigned");
+
+        // Notify Agent
+        if (agent.getUser() != null) {
+            String agentMsg = String.format("New e-waste collection request REQ-%d (%s, Qty: %d) has been assigned to you. Location: %s. Contact citizen: %s (%s).",
+                    request.getId(), request.getDeviceName(), request.getQuantity(),
+                    request.getUserLocation() != null ? request.getUserLocation() : "Customer Address",
+                    request.getUser().getName(),
+                    request.getUser().getPhoneNumber() != null ? request.getUser().getPhoneNumber() : "View details in portal");
+            createAndSendNotification(agent.getUser(), agentMsg, "Green Circuit - New Pickup Assigned");
+        }
+
+        return updated;
+    }
+
     public PickupRequest assignCollector(Long requestId, String collectorName, String collectorPhone, LocalDate date, LocalTime time, String officeEmail) {
         PickupRequest request = getAndValidateCollectorAccess(requestId, officeEmail);
         
@@ -206,6 +254,8 @@ public class PickupRequestService {
         request.setCollectorPhoneNumber(collectorPhone);
         request.setPickupDate(date);
         request.setPickupTime(time);
+        request.setAssignedAt(LocalDateTime.now());
+        request.setAssignedByOffice(request.getOffice());
         request.setStatus(RequestStatus.PICKUP_SCHEDULED);
 
         PickupRequest updated = pickupRequestRepository.save(request);

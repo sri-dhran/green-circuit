@@ -23,4 +23,13 @@ public class UserController {
         String email = authentication.getName();
         return ResponseEntity.ok(userService.getUserProfileByEmail(email));
     }
+
+    @org.springframework.web.bind.annotation.PutMapping({"/me", "/profile"})
+    public ResponseEntity<UserProfileDTO> updateProfile(
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.greencircuit.backend.modules.user.dto.UpdateProfileRequest request,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(userService.updateProfile(email, request));
+    }
 }

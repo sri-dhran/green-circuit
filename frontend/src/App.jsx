@@ -5,6 +5,7 @@ import OfficeDashboard from './modules/center/pages/OfficeDashboard';
 import UserDashboard from './modules/pickup/pages/UserDashboard';
 import RewardStore from './modules/reward/pages/RewardStore';
 import SuperAdminDashboard from './modules/analytics/pages/SuperAdminDashboard';
+import AgentDashboard from './modules/agent/pages/AgentDashboard';
 import { AuthProvider } from './modules/user/context/AuthContext';
 import PrivateRoute from './modules/user/components/PrivateRoute';
 import './App.css';
@@ -19,6 +20,8 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<PrivateRoute requiredRole="OFFICE"><OfficeDashboard /></PrivateRoute>} />
           <Route path="/user-dashboard" element={<PrivateRoute requiredRole="USER"><UserDashboard /></PrivateRoute>} />
+          <Route path="/agent/dashboard" element={<PrivateRoute requiredRole="AGENT"><AgentDashboard /></PrivateRoute>} />
+          <Route path="/agent" element={<Navigate to="/agent/dashboard" />} />
           <Route path="/reward-store" element={<PrivateRoute><RewardStore /></PrivateRoute>} />
           <Route path="/admin" element={<PrivateRoute requiredRole="SUPER_ADMIN"><SuperAdminDashboard /></PrivateRoute>} />
         </Routes>

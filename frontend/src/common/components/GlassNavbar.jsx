@@ -69,6 +69,7 @@ const GlassNavbar = ({ activeTab, onTabChange }) => {
         <div className="gc-nav-brand" onClick={() => {
           if (user.role === 'SUPER_ADMIN' && user.email?.toLowerCase() === 'sri741815@gmail.com') navigate('/admin');
           else if (user.role === 'OFFICE') navigate('/dashboard');
+          else if (user.role === 'AGENT') navigate('/agent/dashboard');
           else navigate('/user-dashboard');
         }}>
           <div className="gc-nav-logo-icon">♻</div>
@@ -104,6 +105,17 @@ const GlassNavbar = ({ activeTab, onTabChange }) => {
                 onClick={() => navigate('/dashboard')}
               >
                 Office Console
+              </button>
+            </>
+          )}
+
+          {user.role === 'AGENT' && (
+            <>
+              <button
+                className={`gc-nav-link ${location.pathname === '/agent/dashboard' || location.pathname === '/agent' ? 'active' : ''}`}
+                onClick={() => navigate('/agent/dashboard')}
+              >
+                Field Agent Portal
               </button>
             </>
           )}
@@ -272,6 +284,15 @@ const GlassNavbar = ({ activeTab, onTabChange }) => {
                 onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); }}
               >
                 Office Console
+              </button>
+            )}
+
+            {user.role === 'AGENT' && (
+              <button
+                className="gc-mobile-link active"
+                onClick={() => { navigate('/agent/dashboard'); setMobileMenuOpen(false); }}
+              >
+                Field Agent Portal
               </button>
             )}
 

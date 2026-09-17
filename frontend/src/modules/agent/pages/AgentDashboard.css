@@ -1,0 +1,230 @@
+/* ============================================================
+   AgentDashboard Styles — Liquid Glass Field Agent Portal
+   ============================================================ */
+
+.gc-agent-dash-root {
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--gc-bg);
+  padding-bottom: 60px;
+}
+
+.gc-agent-dash-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.gc-agent-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 26px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.gc-agent-badge-id {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  padding: 3px 10px;
+  border-radius: 9999px;
+}
+
+.gc-agent-heading {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 6px 0 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.gc-agent-name-highlight {
+  color: #00ff88;
+}
+
+.gc-agent-subheading {
+  font-size: 0.92rem;
+  color: var(--gc-text-secondary);
+  margin: 0;
+  max-width: 650px;
+  line-height: 1.45;
+}
+
+.gc-agent-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ── KPI Grid ── */
+.gc-agent-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.gc-agent-stat-card {
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(14, 30, 22, 0.7);
+}
+
+.gc-agent-today-card {
+  border-color: rgba(0, 230, 118, 0.4);
+  background: rgba(10, 38, 26, 0.8);
+  box-shadow: 0 0 25px rgba(0, 230, 118, 0.15);
+}
+
+/* ── Panel & Controls ── */
+.gc-agent-requests-panel {
+  padding: 24px 28px;
+}
+
+.gc-agent-panel-header {
+  margin-bottom: 18px;
+}
+
+.gc-agent-controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+/* Table styling */
+.gc-agent-table-wrapper {
+  overflow-x: auto;
+}
+
+.gc-agent-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.gc-agent-table th {
+  text-align: left;
+  padding: 12px 14px;
+  color: var(--gc-text-muted);
+  font-weight: 600;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--gc-border);
+}
+
+.gc-agent-table td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--gc-text-secondary);
+  vertical-align: middle;
+}
+
+.gc-req-id-badge {
+  font-family: monospace;
+  font-weight: 700;
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  font-size: 0.8rem;
+}
+
+.gc-td-citizen {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gc-td-citizen strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.gc-citizen-phone {
+  font-size: 0.78rem;
+  color: #00d4ff;
+  text-decoration: none;
+}
+
+.gc-citizen-phone:hover {
+  text-decoration: underline;
+  color: #00ff88;
+}
+
+.gc-td-device {
+  display: flex;
+  flex-direction: column;
+}
+
+.gc-td-device strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.gc-device-sub {
+  font-size: 0.72rem;
+  color: var(--gc-text-muted);
+}
+
+.gc-td-window {
+  display: flex;
+  flex-direction: column;
+}
+
+.gc-td-window span {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.gc-td-window small {
+  color: var(--gc-text-muted);
+  font-size: 0.72rem;
+}
+
+.gc-chip-ontheway {
+  background: rgba(0, 212, 255, 0.15);
+  border-color: rgba(0, 212, 255, 0.4);
+  color: #00d4ff;
+}
+
+.gc-agent-empty-box {
+  text-align: center;
+  padding: 44px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed var(--gc-border-light);
+  border-radius: 12px;
+  color: var(--gc-text-secondary);
+}
+
+.gc-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 1024px) {
+  .gc-agent-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .gc-agent-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .gc-agent-dash-container {
+    padding: 16px;
+  }
+}

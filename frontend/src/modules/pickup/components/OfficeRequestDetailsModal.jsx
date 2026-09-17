@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { pickupRequestService } from '../api/pickupRequestService';
+import { agentService } from '../../agent/api/agentService';
 import { getImageUrl } from '../../../common/api/axiosConfig';
 import InteractiveMap from '../../../common/components/InteractiveMap';
 import './OfficeRequestDetailsModal.css';
@@ -12,14 +13,56 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
   const [imageLoading, setImageLoading] = useState(true);
   const [fullImageModal, setFullImageModal] = useState(false);
 
-  // For Scheduling Pickup
-  const [collectorName, setCollectorName] = useState('');
-  const [collectorPhone, setCollectorPhone] = useState('');
-  const [pickupDate, setPickupDate] = useState('');
-  const [pickupTime, setPickupTime] = useState('');
+  // Available office agents
+  const [availableAgents, setAvailableAgents] = useState([]);
+  const [selectedAgentId, setSelectedAgentId] = useState('');
 
-  // For subsequent statuses
+  // Scheduling details
+  const [collectorName, setCollectorName] = useState(request?.collectorName || '');
+  const [collectorPhone, setCollectorPhone] = useState(request?.collectorPhoneNumber || '');
+  const [pickupDate, setPickupDate] = useState(
+    request?.pickupDate || new Date().toISOString().split('T')[0]
+  );
+  const [pickupTime, setPickupTime] = useState(request?.pickupTime || '10:00');
+
+  // Next status
   const [nextStatus, setNextStatus] = useState('');
+
+  useEffect(() => {
+    if (open) {
+      loadOfficeAgents();
+      if (request) {
+        setCollectorName(request.collectorName || (request.agent ? request.agent.fullName : ''));
+        setCollectorPhone(request.collectorPhoneNumber || (request.agent ? request.agent.mobileNumber : ''));
+        if (request.agent) {
+          setSelectedAgentId(String(request.agent.id));
+        }
+      }
+    }
+  }, [open, request]);
+
+  const loadOfficeAgents = async () => {
+    try {
+      const data = await agentService.getOfficeAgents();
+      if (Array.isArray(data)) {
+        setAvailableAgents(data.filter((a) => a.status === 'ACTIVE'));
+      }
+    } catch (err) {
+      console.warn('Could not load office agents:', err);
+    }
+  };
+
+  const handleAgentSelect = (e) => {
+    const agentId = e.target.value;
+    setSelectedAgentId(agentId);
+    if (!agentId) return;
+
+    const agent = availableAgents.find((a) => String(a.id) === String(agentId));
+    if (agent) {
+      setCollectorName(agent.fullName);
+      setCollectorPhone(agent.mobileNumber);
+    }
+  };
 
   if (!open || !request) return null;
 
@@ -46,20 +89,34 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
     }
   };
 
-  const handleAssignCollector = async () => {
-    if (!collectorName || !collectorPhone || !pickupDate || !pickupTime) return;
+  const handleAssignAgentOrCollector = async () => {
+    if (!collectorName || !collectorPhone || !pickupDate || !pickupTime) {
+      alert('Please select an agent or provide agent name, contact number, pickup date and time.');
+      return;
+    }
+
     setLoading(true);
     try {
-      await pickupRequestService.assignCollector(
-        request.id,
-        collectorName,
-        collectorPhone,
-        pickupDate,
-        pickupTime
-      );
+      if (selectedAgentId) {
+        await pickupRequestService.assignAgent(
+          request.id,
+          Number(selectedAgentId),
+          pickupDate,
+          pickupTime
+        );
+      } else {
+        await pickupRequestService.assignCollector(
+          request.id,
+          collectorName,
+          collectorPhone,
+          pickupDate,
+          pickupTime
+        );
+      }
       if (onActionComplete) onActionComplete();
     } catch (err) {
-      console.error('Failed to assign collector:', err);
+      console.error('Failed to assign agent:', err);
+      alert('Failed to assign collection agent. Please check connection and try again.');
       setLoading(false);
     }
   };
@@ -82,6 +139,11 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
     request.latitude && request.longitude
       ? { lat: request.latitude, lng: request.longitude }
       : null;
+
+  const assignedAgentObj = request.agent || (request.collectorName ? {
+    fullName: request.collectorName,
+    mobileNumber: request.collectorPhoneNumber,
+  } : null);
 
   return (
     <>
@@ -111,18 +173,63 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
                 <div className="gc-card-subpanel">
                   <h4 className="gc-subpanel-title">👤 User Contact Details</h4>
                   <div className="gc-detail-pair">
-                    <span className="gc-detail-key">Name</span>
+                    <span className="gc-detail-key">Citizen Name</span>
                     <span className="gc-detail-val">{request.user?.name}</span>
                   </div>
                   <div className="gc-detail-pair">
-                    <span className="gc-detail-key">Email</span>
+                    <span className="gc-detail-key">Mobile Number</span>
+                    <span className="gc-detail-val">
+                      {request.user?.phoneNumber ? (
+                        <a href={`tel:${request.user.phoneNumber}`} className="gc-link">
+                          📱 {request.user.phoneNumber}
+                        </a>
+                      ) : (
+                        'N/A'
+                      )}
+                    </span>
+                  </div>
+                  <div className="gc-detail-pair">
+                    <span className="gc-detail-key">Email Address</span>
                     <span className="gc-detail-val">{request.user?.email}</span>
                   </div>
                   <div className="gc-detail-pair">
                     <span className="gc-detail-key">Pickup Address</span>
-                    <span className="gc-detail-val">{request.userLocation || 'GPS coordinates only'}</span>
+                    <span className="gc-detail-val">{request.userLocation || request.user?.address || 'GPS coordinates only'}</span>
                   </div>
                 </div>
+
+                {/* Assigned Agent Box if assigned */}
+                {assignedAgentObj && (
+                  <div className="gc-card-subpanel" style={{ marginTop: '16px', background: 'rgba(0, 212, 255, 0.05)', borderColor: 'rgba(0, 212, 255, 0.25)' }}>
+                    <h4 className="gc-subpanel-title" style={{ color: '#00d4ff' }}>👮 Assigned Collection Agent</h4>
+                    <div className="gc-detail-pair">
+                      <span className="gc-detail-key">Agent Name</span>
+                      <span className="gc-detail-val" style={{ color: '#00ff88', fontWeight: '700' }}>
+                        {assignedAgentObj.fullName} {request.agent?.employeeId ? `(${request.agent.employeeId})` : ''}
+                      </span>
+                    </div>
+                    <div className="gc-detail-pair">
+                      <span className="gc-detail-key">Agent Mobile</span>
+                      <span className="gc-detail-val">
+                        <a href={`tel:${assignedAgentObj.mobileNumber}`} className="gc-link" style={{ color: '#00d4ff' }}>
+                          📱 {assignedAgentObj.mobileNumber}
+                        </a>
+                      </span>
+                    </div>
+                    {request.pickupDate && (
+                      <div className="gc-detail-pair">
+                        <span className="gc-detail-key">Scheduled Window</span>
+                        <span className="gc-detail-val">{request.pickupDate} {request.pickupTime ? `at ${request.pickupTime}` : ''}</span>
+                      </div>
+                    )}
+                    {request.agentRemarks && (
+                      <div className="gc-detail-pair">
+                        <span className="gc-detail-key">Agent Remarks</span>
+                        <span className="gc-detail-val">{request.agentRemarks}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="gc-card-subpanel" style={{ marginTop: '16px' }}>
                   <h4 className="gc-subpanel-title">📱 E-Waste Specifications</h4>
@@ -247,24 +354,43 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
               </div>
             )}
 
-            {/* ACCEPTED: Schedule pickup */}
-            {request.status === 'ACCEPTED' && (
+            {/* ACCEPTED / ASSIGNED: Schedule & Assign Collection Agent */}
+            {(request.status === 'ACCEPTED' || request.status === 'PENDING') && (
               <div className="gc-workflow-box">
-                <h4 className="gc-workflow-title">🚚 Schedule Pickup Agent & Time</h4>
+                <h4 className="gc-workflow-title">🚚 Assign Registered Collection Agent & Schedule Window</h4>
+                
+                {availableAgents.length > 0 && (
+                  <div className="gc-field-group" style={{ marginBottom: '14px' }}>
+                    <label className="gc-input-label">Select Office Agent *</label>
+                    <select
+                      className="gc-select-field"
+                      value={selectedAgentId}
+                      onChange={handleAgentSelect}
+                    >
+                      <option value="">-- Choose Verified Field Agent --</option>
+                      {availableAgents.map((ag) => (
+                        <option key={ag.id} value={ag.id}>
+                          👮 {ag.fullName} ({ag.mobileNumber}) - {ag.employeeId || `AGT-${ag.id}`} [{ag.assignedRequestsCount || 0} active pickups]
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div className="gc-workflow-grid">
                   <div className="gc-field-group">
                     <label className="gc-input-label">Collector / Agent Name *</label>
                     <input
                       type="text"
                       className="gc-input-field"
-                      placeholder="e.g. Ramesh Kumar"
+                      placeholder="e.g. Arun Kumar"
                       value={collectorName}
                       onChange={(e) => setCollectorName(e.target.value)}
                       required
                     />
                   </div>
                   <div className="gc-field-group">
-                    <label className="gc-input-label">Collector Phone *</label>
+                    <label className="gc-input-label">Collector Mobile *</label>
                     <input
                       type="text"
                       className="gc-input-field"
@@ -295,11 +421,22 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
                     />
                   </div>
                 </div>
+
+                <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    className="gc-btn-primary"
+                    disabled={!collectorName || !collectorPhone || loading}
+                    onClick={handleAssignAgentOrCollector}
+                  >
+                    {loading ? 'Assigning Agent…' : '👮 Assign Collection Agent & Notify'}
+                  </button>
+                </div>
               </div>
             )}
 
             {/* Advance Recycling Pipeline for SCHEDULED, COLLECTED, RECEIVED_AT_OFFICE */}
-            {(request.status === 'PICKUP_SCHEDULED' || request.status === 'COLLECTED' || request.status === 'RECEIVED_AT_OFFICE') && (
+            {(request.status === 'PICKUP_SCHEDULED' || request.status === 'ON_THE_WAY' || request.status === 'COLLECTED' || request.status === 'RECEIVED_AT_OFFICE') && (
               <div className="gc-workflow-box">
                 <h4 className="gc-workflow-title">♻️ Advance Recycling Pipeline</h4>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -310,10 +447,10 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
                       onChange={(e) => setNextStatus(e.target.value)}
                     >
                       <option value="">-- Choose Next Status --</option>
-                      {request.status === 'PICKUP_SCHEDULED' && (
+                      {(request.status === 'PICKUP_SCHEDULED' || request.status === 'ON_THE_WAY') && (
                         <option value="COLLECTED">COLLECTED (Agent picked up device)</option>
                       )}
-                      {(request.status === 'PICKUP_SCHEDULED' || request.status === 'COLLECTED') && (
+                      {(request.status === 'PICKUP_SCHEDULED' || request.status === 'ON_THE_WAY' || request.status === 'COLLECTED') && (
                         <option value="RECEIVED_AT_OFFICE">RECEIVED_AT_OFFICE (Arrived at Facility)</option>
                       )}
                       {(request.status === 'COLLECTED' || request.status === 'RECEIVED_AT_OFFICE') && (
@@ -348,65 +485,51 @@ const OfficeRequestDetailsModal = ({ request, open, onClose, onActionComplete })
                 {isRejecting ? (
                   <button
                     type="button"
-                    className="gc-btn-primary gc-btn-danger"
-                    onClick={handleReject}
+                    className="gc-btn-danger"
                     disabled={!responseMsg.trim() || loading}
+                    onClick={handleReject}
                   >
-                    {loading ? 'Rejecting…' : 'Confirm Rejection'}
+                    Confirm Rejection
                   </button>
                 ) : (
-                  <button
-                    type="button"
-                    className="gc-btn-secondary gc-btn-danger"
-                    onClick={() => setIsRejecting(true)}
-                    disabled={loading}
-                  >
-                    Reject Request
-                  </button>
-                )}
-
-                {!isRejecting && (
-                  <button
-                    type="button"
-                    className="gc-btn-primary"
-                    onClick={handleAccept}
-                    disabled={loading}
-                  >
-                    {loading ? 'Accepting…' : 'Accept Request'}
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      className="gc-btn-secondary"
+                      style={{ color: '#ff8a80', borderColor: 'rgba(255, 82, 82, 0.4)' }}
+                      onClick={() => setIsRejecting(true)}
+                      disabled={loading}
+                    >
+                      Reject Request
+                    </button>
+                    <button
+                      type="button"
+                      className="gc-btn-primary"
+                      onClick={handleAccept}
+                      disabled={loading}
+                    >
+                      Accept Request
+                    </button>
+                  </>
                 )}
               </>
-            )}
-
-            {request.status === 'ACCEPTED' && (
-              <button
-                type="button"
-                className="gc-btn-primary"
-                onClick={handleAssignCollector}
-                disabled={!collectorName || !collectorPhone || !pickupDate || !pickupTime || loading}
-              >
-                {loading ? 'Scheduling…' : 'Confirm Scheduled Pickup'}
-              </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Full-screen Zoom Modal for Uploaded Photo */}
+      {/* Full Size Image Lightbox */}
       {fullImageModal && (
-        <div className="gc-modal-backdrop" onClick={() => setFullImageModal(false)}>
-          <div className="gc-modal-window gc-zoom-image-window" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
-              <span style={{ fontWeight: 600, color: '#ffffff' }}>E-Waste Photo — {request.deviceName}</span>
-              <button type="button" className="gc-modal-close-btn" onClick={() => setFullImageModal(false)}>✕</button>
-            </div>
-            <div style={{ padding: '20px', display: 'flex', justifyContent: 'center' }}>
-              <img
-                src={imageUrl}
-                alt="E-Waste Device Full Preview"
-                style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: '12px', objectFit: 'contain' }}
-              />
-            </div>
+        <div className="gc-lightbox-backdrop" onClick={() => setFullImageModal(false)}>
+          <div className="gc-lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <img src={imageUrl} alt="E-Waste Full View" className="gc-lightbox-img" />
+            <button
+              type="button"
+              className="gc-lightbox-close"
+              onClick={() => setFullImageModal(false)}
+            >
+              ✕ Close
+            </button>
           </div>
         </div>
       )}

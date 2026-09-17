@@ -19,6 +19,7 @@ public class UserDataSeeder {
     public CommandLineRunner seedDemoUsers(
             UserRepository userRepository,
             OfficeRepository officeRepository,
+            com.greencircuit.backend.modules.agent.repository.CollectionAgentRepository agentRepository,
             PasswordEncoder passwordEncoder
     ) {
         return args -> {
@@ -28,6 +29,9 @@ public class UserDataSeeder {
             user.setEmail("user@greencircuit.com");
             user.setPassword(passwordEncoder.encode("password123"));
             user.setRole(Role.USER);
+            user.setPhoneNumber("+91 9876500001");
+            user.setAddress("42 Palm Grove Avenue");
+            user.setCity("Chennai");
             if (user.getRewardPoints() == null || user.getRewardPoints() < 150) {
                 user.setRewardPoints(150);
             }
@@ -40,6 +44,7 @@ public class UserDataSeeder {
             admin.setEmail("sri741815@gmail.com");
             admin.setPassword(passwordEncoder.encode("Sri@1234"));
             admin.setRole(Role.SUPER_ADMIN);
+            admin.setPhoneNumber("+91 9000000001");
             userRepository.save(admin);
             System.out.println("Seeded/updated super admin user: sri741815@gmail.com");
 
@@ -55,8 +60,57 @@ public class UserDataSeeder {
                 seedOfficeStaff(userRepository, passwordEncoder, offices, "Green India", "greenindia@greencircuit.com", "Green India Plant Supervisor");
                 seedOfficeStaff(userRepository, passwordEncoder, offices, "Dharani", "dharani@greencircuit.com", "Dharani Processing Head");
                 seedOfficeStaff(userRepository, passwordEncoder, offices, "Eco Birbals", "ecobirbals@greencircuit.com", "Eco Birbals Hub Manager");
+
+                // Seed Collection Agents
+                seedCollectionAgent(userRepository, agentRepository, passwordEncoder, offices, "Techazar", "agent.techazar@greencircuit.com", "Arun Kumar", "+91 9876543210", "TEC-A001");
+                seedCollectionAgent(userRepository, agentRepository, passwordEncoder, offices, "Green Era", "agent.greenera@greencircuit.com", "Karthik Raja", "+91 9845123456", "GRE-A001");
+                seedCollectionAgent(userRepository, agentRepository, passwordEncoder, offices, "Adhira", "agent.adhira@greencircuit.com", "Suresh Raina", "+91 9789012345", "ADH-A001");
             }
         };
+    }
+
+    private void seedCollectionAgent(
+            UserRepository userRepository,
+            com.greencircuit.backend.modules.agent.repository.CollectionAgentRepository agentRepository,
+            PasswordEncoder passwordEncoder,
+            List<Office> offices,
+            String officeKeyword,
+            String email,
+            String fullName,
+            String mobile,
+            String empId
+    ) {
+        Office targetOffice = offices.stream()
+                .filter(o -> o.getOfficeName() != null && o.getOfficeName().toLowerCase().contains(officeKeyword.toLowerCase()))
+                .findFirst()
+                .orElse(null);
+
+        if (targetOffice != null) {
+            User agentUser = userRepository.findByEmail(email).orElse(new User());
+            agentUser.setName(fullName);
+            agentUser.setEmail(email);
+            agentUser.setPassword(passwordEncoder.encode("password123"));
+            agentUser.setRole(Role.AGENT);
+            agentUser.setPhoneNumber(mobile);
+            agentUser.setOffice(targetOffice);
+            userRepository.save(agentUser);
+
+            com.greencircuit.backend.modules.agent.entity.CollectionAgent agent = agentRepository.findByEmail(email)
+                    .orElse(new com.greencircuit.backend.modules.agent.entity.CollectionAgent());
+            agent.setFullName(fullName);
+            agent.setEmail(email);
+            agent.setMobileNumber(mobile);
+            agent.setEmployeeId(empId);
+            agent.setStatus("ACTIVE");
+            agent.setOffice(targetOffice);
+            agent.setUser(agentUser);
+            agent.setCity(targetOffice.getCity());
+            agent.setState(targetOffice.getState());
+            agent.setAddress("Logistics Hub, " + targetOffice.getAddress());
+            agentRepository.save(agent);
+
+            System.out.println("Seeded/updated collection agent: " + fullName + " (" + email + ") for " + targetOffice.getOfficeName());
+        }
     }
 
     private void seedOfficeStaff(

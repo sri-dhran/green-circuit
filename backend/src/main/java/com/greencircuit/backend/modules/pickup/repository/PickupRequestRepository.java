@@ -12,5 +12,11 @@ import java.util.List;
 public interface PickupRequestRepository extends JpaRepository<PickupRequest, Long> {
     List<PickupRequest> findByUserOrderByCreatedAtDesc(User user);
     List<PickupRequest> findByOfficeOrderByCreatedAtDesc(Office office);
+    List<PickupRequest> findByAgentOrderByCreatedAtDesc(com.greencircuit.backend.modules.agent.entity.CollectionAgent agent);
+    List<PickupRequest> findByAgentAndStatusOrderByCreatedAtDesc(com.greencircuit.backend.modules.agent.entity.CollectionAgent agent, com.greencircuit.backend.modules.pickup.entity.RequestStatus status);
     List<PickupRequest> findAllByOrderByCreatedAtDesc();
+
+    long countByAgent(com.greencircuit.backend.modules.agent.entity.CollectionAgent agent);
+    long countByAgentAndStatus(com.greencircuit.backend.modules.agent.entity.CollectionAgent agent, com.greencircuit.backend.modules.pickup.entity.RequestStatus status);
+    long countByAgentAndStatusIn(com.greencircuit.backend.modules.agent.entity.CollectionAgent agent, java.util.Collection<com.greencircuit.backend.modules.pickup.entity.RequestStatus> statuses);
 }

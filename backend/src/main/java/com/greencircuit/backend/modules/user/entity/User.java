@@ -34,6 +34,15 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Integer rewardPoints = 0;
 
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    private String address;
+    private String city;
+
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
     @ManyToOne
     @JoinColumn(name = "office_id")
     private Office office;
@@ -104,6 +113,38 @@ public class User implements UserDetails {
 
     public void setOffice(Office office) {
         this.office = office;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 
     // UserDetails Methods

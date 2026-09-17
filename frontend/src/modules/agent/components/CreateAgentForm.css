@@ -1,0 +1,132 @@
+/* ============================================================
+   CreateAgentForm Styles — Liquid Glass Form
+   ============================================================ */
+
+.gc-create-agent-card {
+  padding: 8px 0;
+}
+
+.gc-create-agent-header {
+  margin-bottom: 24px;
+}
+
+.gc-form-main-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 8px 0 6px 0;
+  letter-spacing: -0.4px;
+}
+
+.gc-form-main-desc {
+  font-size: 0.88rem;
+  color: var(--gc-text-secondary);
+  margin: 0;
+  max-width: 680px;
+  line-height: 1.45;
+}
+
+.gc-form-sub-header {
+  border-bottom: 1px solid var(--gc-border-light);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.gc-form-sub-header h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #00d4ff;
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.gc-agent-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gc-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.gc-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.gc-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gc-field-label {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--gc-text-secondary);
+}
+
+.gc-field-hint {
+  font-size: 0.72rem;
+  color: var(--gc-text-muted);
+  margin-top: 2px;
+}
+
+.gc-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 18px;
+  border-top: 1px solid var(--gc-border-light);
+  flex-wrap: wrap;
+}
+
+.gc-create-agent-success {
+  text-align: center;
+  padding: 48px 24px;
+  background: rgba(0, 230, 118, 0.08);
+  border: 1px solid rgba(0, 230, 118, 0.3);
+  border-radius: var(--gc-radius-lg);
+}
+
+.gc-success-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #00e676;
+  color: #020d08;
+  font-size: 2rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+  box-shadow: 0 0 25px rgba(0, 230, 118, 0.5);
+}
+
+.gc-create-agent-success h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.gc-create-agent-success p {
+  font-size: 0.9rem;
+  color: var(--gc-text-secondary);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .gc-form-grid-2,
+  .gc-form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}

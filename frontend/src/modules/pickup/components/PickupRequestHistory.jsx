@@ -316,20 +316,68 @@ const PickupRequestHistory = () => {
                 </div>
               )}
 
-              {/* Scheduled Pickup Agent Banner if applicable */}
-              {(selectedRequest.status === 'PICKUP_SCHEDULED' || selectedRequest.status === 'COLLECTED' || selectedRequest.status === 'RECEIVED_AT_OFFICE') && selectedRequest.collectorName && (
-                <div className="gc-scheduled-card">
-                  <div className="gc-scheduled-icon">🚚</div>
-                  <div>
-                    <h4 className="gc-scheduled-title">Assigned Logistics Agent</h4>
-                    <p className="gc-scheduled-text">
-                      <strong>Agent:</strong> {selectedRequest.collectorName} •{' '}
-                      <strong>Contact:</strong> {selectedRequest.collectorPhoneNumber || 'Provided upon dispatch'}
-                    </p>
-                    {selectedRequest.pickupDate && (
-                      <p className="gc-scheduled-text">
-                        <strong>Scheduled Window:</strong> {selectedRequest.pickupDate} at {selectedRequest.pickupTime || '09:00 - 18:00'}
-                      </p>
+              {/* Collection Agent Details Card if assigned */}
+              {(selectedRequest.agent || selectedRequest.collectorName) && (
+                <div className="gc-scheduled-card" style={{ background: 'rgba(0, 212, 255, 0.08)', borderColor: 'rgba(0, 212, 255, 0.35)', marginBottom: '18px' }}>
+                  <div className="gc-scheduled-icon" style={{ background: 'rgba(0, 212, 255, 0.2)', color: '#00d4ff' }}>👮</div>
+                  <div style={{ flexGrow: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                      <h4 className="gc-scheduled-title" style={{ color: '#00d4ff', margin: 0 }}>
+                        Assigned Collection Agent
+                      </h4>
+                      {selectedRequest.agent?.employeeId && (
+                        <span className="gc-chip gc-chip-accepted" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
+                          🆔 {selectedRequest.agent.employeeId}
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', marginTop: '10px' }}>
+                      <div>
+                        <span style={{ fontSize: '0.74rem', color: 'var(--gc-text-muted)' }}>Agent Name</span>
+                        <div style={{ fontWeight: '700', color: '#ffffff', fontSize: '0.92rem' }}>
+                          {selectedRequest.agent?.fullName || selectedRequest.collectorName}
+                        </div>
+                      </div>
+
+                      <div>
+                        <span style={{ fontSize: '0.74rem', color: 'var(--gc-text-muted)' }}>Agent Mobile</span>
+                        <div>
+                          {(selectedRequest.agent?.mobileNumber || selectedRequest.collectorPhoneNumber) ? (
+                            <a
+                              href={`tel:${selectedRequest.agent?.mobileNumber || selectedRequest.collectorPhoneNumber}`}
+                              className="gc-btn-primary"
+                              style={{ padding: '4px 10px', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none', marginTop: '2px' }}
+                            >
+                              📞 Call {selectedRequest.agent?.mobileNumber || selectedRequest.collectorPhoneNumber}
+                            </a>
+                          ) : (
+                            <span style={{ color: 'var(--gc-text-muted)', fontSize: '0.82rem' }}>Not provided</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <span style={{ fontSize: '0.74rem', color: 'var(--gc-text-muted)' }}>Collection Center</span>
+                        <div style={{ color: 'var(--gc-text-secondary)', fontSize: '0.82rem' }}>
+                          {selectedRequest.office?.officeName || 'Green Circuit Hub'}
+                        </div>
+                      </div>
+
+                      {selectedRequest.pickupDate && (
+                        <div>
+                          <span style={{ fontSize: '0.74rem', color: 'var(--gc-text-muted)' }}>Pickup Window</span>
+                          <div style={{ color: '#00ff88', fontWeight: '600', fontSize: '0.82rem' }}>
+                            📅 {selectedRequest.pickupDate} {selectedRequest.pickupTime ? `at ${selectedRequest.pickupTime}` : ''}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {selectedRequest.agentRemarks && (
+                      <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: '0.78rem', color: 'var(--gc-text-secondary)' }}>
+                        <strong>Agent Field Notes:</strong> {selectedRequest.agentRemarks}
+                      </div>
                     )}
                   </div>
                 </div>

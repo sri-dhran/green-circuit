@@ -6,6 +6,7 @@ import GlassBackground from '../../../common/components/GlassBackground';
 import GlassNavbar from '../../../common/components/GlassNavbar';
 import PickupRequestForm from '../components/PickupRequestForm';
 import PickupRequestHistory from '../components/PickupRequestHistory';
+import UserProfileModal from '../../user/components/UserProfileModal';
 import './UserDashboard.css';
 
 const UserDashboard = () => {
@@ -13,6 +14,7 @@ const UserDashboard = () => {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState(0); // 0: Submit, 1: History
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [stats, setStats] = useState({
     totalRequests: 0,
     pending: 0,
@@ -68,7 +70,15 @@ const UserDashboard = () => {
             </p>
           </div>
 
-          <div className="gc-dash-header-action">
+          <div className="gc-dash-header-action" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="gc-btn-secondary"
+              style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}
+              onClick={() => setProfileModalOpen(true)}
+            >
+              <span>👤 Mobile & Profile</span>
+            </button>
             <button
               type="button"
               className="gc-btn-secondary gc-rewards-banner-btn"
@@ -230,6 +240,18 @@ const UserDashboard = () => {
             </div>
             <PickupRequestHistory />
           </div>
+        )}
+
+        {/* Edit Profile & Mobile Modal */}
+        {profileModalOpen && (
+          <UserProfileModal
+            user={user}
+            open={profileModalOpen}
+            onClose={() => setProfileModalOpen(false)}
+            onProfileUpdated={() => {
+              if (refreshUser) refreshUser();
+            }}
+          />
         )}
       </main>
     </div>
