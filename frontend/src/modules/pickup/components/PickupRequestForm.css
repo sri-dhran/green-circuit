@@ -267,7 +267,7 @@
 /* Map Modal */
 .gc-map-modal {
   max-width: 860px;
-  padding: 24px;
+  padding: 0;
 }
 
 .gc-modal-header {
